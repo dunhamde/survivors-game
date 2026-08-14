@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/holy_strike.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"holy_strike"
+display_name = "Holy Strike"
+description = "A blessed swing at the nearest foe."
+scene = ExtResource("2")
+max_level = 5
+upgrade_hint = "+Damage, +Range, faster swings"
+base_damage = 18.0
+damage_per_level = 6.0
+base_cooldown = 0.55
+cooldown_per_level = -0.04
+base_area = 80.0
+area_per_level = 8.0
+base_count = 1

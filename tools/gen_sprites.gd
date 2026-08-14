@@ -1,0 +1,392 @@
+extends SceneTree
+
+# Original chunky pixel sprites for the Elwynn paladin slice.
+# Run: godot --headless --path . -s res://tools/gen_sprites.gd
+
+func _init() -> void:
+	_gen_tiles()
+	_gen_paladin()
+	_gen_gnoll()
+	_gen_kobold()
+	_gen_murloc()
+	_gen_hogger()
+	_gen_weapons()
+	_gen_fx()
+	_gen_props()
+	_gen_ui()
+	print("Sprites written.")
+	quit()
+
+
+func _save(img: Image, path: String) -> void:
+	var err := img.save_png(path)
+	if err != OK:
+		push_error("Failed to save %s (%s)" % [path, err])
+	else:
+		print("  ", path)
+
+
+func _px(img: Image, x: int, y: int, c: Color) -> void:
+	if x < 0 or y < 0 or x >= img.get_width() or y >= img.get_height():
+		return
+	img.set_pixel(x, y, c)
+
+
+func _rect(img: Image, x: int, y: int, w: int, h: int, c: Color) -> void:
+	for iy in range(y, y + h):
+		for ix in range(x, x + w):
+			_px(img, ix, iy, c)
+
+
+func _outline_rect(img: Image, x: int, y: int, w: int, h: int, c: Color) -> void:
+	for ix in range(x, x + w):
+		_px(img, ix, y, c)
+		_px(img, ix, y + h - 1, c)
+	for iy in range(y, y + h):
+		_px(img, x, iy, c)
+		_px(img, x + w - 1, iy, c)
+
+
+func _circle(img: Image, cx: int, cy: int, r: int, c: Color, fill: bool = true) -> void:
+	for y in range(cy - r, cy + r + 1):
+		for x in range(cx - r, cx + r + 1):
+			var d := Vector2(x - cx, y - cy).length()
+			if fill and d <= r + 0.35:
+				_px(img, x, y, c)
+			elif not fill and absf(d - r) < 0.85:
+				_px(img, x, y, c)
+
+
+# --- palettes ---
+const SKIN := Color("e8c4a0")
+const SKIN_D := Color("c4926e")
+const HAIR := Color("3d2914")
+const PLATE := Color("d2d7e1")
+const PLATE_D := Color("8c96a5")
+const GOLD := Color("d4a017")
+const GOLD_L := Color("f0d060")
+const BLUE := Color("2b5ba8")
+const BLUE_D := Color("1a3a70")
+const LEATHER := Color("5c4028")
+const BLACK := Color("1a1410")
+const WHITE := Color("f4f0e8")
+
+const GNOLL := Color("c4a574")
+const GNOLL_D := Color("8b6914")
+const GNOLL_F := Color("6b4423")
+const CLOTH_R := Color("8b2020")
+
+const KOB := Color("c8b896")
+const KOB_D := Color("8a7a58")
+const CANDLE := Color("ffcc44")
+const HAT := Color("c45c20")
+const PICK := Color("888888")
+
+const MUR := Color("4a8b6f")
+const MUR_L := Color("6cba8e")
+const MUR_BELLY := Color("c4b896")
+const MUR_EYE := Color("ffdd44")
+const MUR_MOUTH := Color("cc4466")
+
+const GRASS_A := Color("3d6b2e")
+const GRASS_B := Color("4a7a35")
+const GRASS_C := Color("2f5624")
+const GRASS_D := Color("5a8c3e")
+const FLOWER := Color("e8d878")
+const DIRT := Color("8a6a3c")
+const DIRT_D := Color("6e5230")
+const DIRT_L := Color("a48450")
+const TRUNK := Color("5a3a1c")
+const TRUNK_D := Color("3a2410")
+const LEAF := Color("2f6b28")
+const LEAF_L := Color("4a9a38")
+const LEAF_D := Color("1e4a1a")
+
+
+func _gen_tiles() -> void:
+	var img := Image.create(96, 16, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# 0 grass dark
+	_fill_tile(img, 0, GRASS_C, GRASS_A, Color("254818"), false)
+	# 1 grass mid
+	_fill_tile(img, 1, GRASS_A, GRASS_B, GRASS_C, false)
+	# 2 grass light
+	_fill_tile(img, 2, GRASS_B, GRASS_D, GRASS_A, false)
+	# 3 flowers
+	_fill_tile(img, 3, GRASS_A, GRASS_B, GRASS_C, true)
+	# 4 dirt
+	_fill_tile(img, 4, DIRT, DIRT_D, DIRT_L, false)
+	# 5 dirt pale
+	_fill_tile(img, 5, DIRT_L, DIRT, DIRT_D, false)
+	_save(img, "res://assets/tiles/elwynn/elwynn_tiles.png")
+
+
+func _fill_tile(img: Image, index: int, a: Color, b: Color, c: Color, flowers: bool) -> void:
+	var ox := index * 16
+	for y in 16:
+		for x in 16:
+			var n := (x * 13 + y * 7 + index * 17) % 7
+			var col := a
+			if n == 0 or n == 1:
+				col = b
+			elif n == 2:
+				col = c
+			_px(img, ox + x, y, col)
+	if flowers:
+		_px(img, ox + 4, 5, FLOWER)
+		_px(img, ox + 5, 5, WHITE)
+		_px(img, ox + 11, 10, Color("d070a0"))
+		_px(img, ox + 12, 10, WHITE)
+		_px(img, ox + 7, 13, FLOWER)
+
+
+func _gen_paladin() -> void:
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# legs
+	_rect(img, 10, 24, 5, 7, PLATE_D)
+	_rect(img, 17, 24, 5, 7, PLATE_D)
+	_rect(img, 10, 30, 5, 2, LEATHER)
+	_rect(img, 17, 30, 5, 2, LEATHER)
+	# tabard / torso
+	_rect(img, 9, 14, 14, 11, PLATE)
+	_rect(img, 12, 15, 8, 10, BLUE)
+	_rect(img, 15, 15, 2, 10, GOLD)
+	_rect(img, 12, 19, 8, 2, GOLD)
+	# arms
+	_rect(img, 6, 15, 4, 8, PLATE)
+	_rect(img, 22, 15, 4, 8, PLATE)
+	# shield (left)
+	_rect(img, 2, 14, 7, 12, BLUE_D)
+	_outline_rect(img, 2, 14, 7, 12, GOLD)
+	_px(img, 5, 16, GOLD_L)
+	_px(img, 5, 17, GOLD_L)
+	_px(img, 4, 18, GOLD_L)
+	_px(img, 5, 18, GOLD_L)
+	_px(img, 6, 18, GOLD_L)
+	_px(img, 5, 19, GOLD_L)
+	_px(img, 5, 20, GOLD_L)
+	# sword (right)
+	_rect(img, 25, 8, 3, 14, Color("c0c8d4"))
+	_rect(img, 24, 20, 5, 2, GOLD)
+	_px(img, 26, 7, WHITE)
+	# head
+	_rect(img, 11, 5, 10, 9, SKIN)
+	_rect(img, 11, 5, 10, 3, HAIR)
+	_rect(img, 11, 5, 2, 7, HAIR)
+	_rect(img, 19, 5, 2, 6, HAIR)
+	_px(img, 14, 10, BLACK)
+	_px(img, 18, 10, BLACK)
+	_rect(img, 14, 12, 4, 1, SKIN_D)
+	# helm brow
+	_rect(img, 10, 7, 12, 2, PLATE)
+	_rect(img, 14, 6, 4, 2, GOLD)
+	_save(img, "res://assets/sprites/player/paladin.png")
+
+
+func _gen_gnoll() -> void:
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	_rect(img, 10, 23, 5, 8, GNOLL_F)
+	_rect(img, 17, 23, 5, 8, GNOLL_F)
+	_rect(img, 9, 14, 14, 10, CLOTH_R)
+	_rect(img, 9, 14, 14, 3, GNOLL)
+	# snout
+	_rect(img, 10, 6, 12, 9, GNOLL)
+	_rect(img, 8, 10, 16, 5, GNOLL)
+	_rect(img, 6, 11, 5, 4, GNOLL_D) # snout
+	_px(img, 7, 12, BLACK)
+	# ears
+	_rect(img, 9, 3, 4, 5, GNOLL_D)
+	_rect(img, 19, 3, 4, 5, GNOLL_D)
+	_px(img, 13, 9, BLACK)
+	_px(img, 18, 9, BLACK)
+	# hyena mane
+	_rect(img, 14, 4, 4, 4, GNOLL_F)
+	# club
+	_rect(img, 24, 12, 4, 12, Color("6a4a28"))
+	_rect(img, 23, 10, 6, 5, Color("5a3a1c"))
+	_save(img, "res://assets/sprites/enemies/gnoll.png")
+
+
+func _gen_kobold() -> void:
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	_rect(img, 11, 24, 4, 7, KOB_D)
+	_rect(img, 17, 24, 4, 7, KOB_D)
+	_rect(img, 10, 16, 12, 9, KOB)
+	_rect(img, 11, 8, 10, 9, KOB)
+	# ears
+	_rect(img, 8, 8, 4, 6, KOB_D)
+	_rect(img, 20, 8, 4, 6, KOB_D)
+	_px(img, 14, 12, BLACK)
+	_px(img, 18, 12, BLACK)
+	_rect(img, 14, 15, 4, 2, Color("4a3020"))
+	# candle on head
+	_rect(img, 14, 2, 4, 7, WHITE)
+	_rect(img, 15, 0, 2, 3, CANDLE)
+	_px(img, 15, 0, Color("ff8822"))
+	# pickaxe
+	_rect(img, 23, 14, 2, 12, Color("6a4a28"))
+	_rect(img, 21, 12, 8, 3, PICK)
+	_save(img, "res://assets/sprites/enemies/kobold.png")
+
+
+func _gen_murloc() -> void:
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# body
+	_rect(img, 10, 14, 12, 12, MUR)
+	_rect(img, 12, 18, 8, 7, MUR_BELLY)
+	# legs / fins
+	_rect(img, 10, 26, 5, 5, MUR_L)
+	_rect(img, 17, 26, 5, 5, MUR_L)
+	# head
+	_rect(img, 9, 6, 14, 10, MUR)
+	# huge eyes
+	_rect(img, 11, 8, 5, 5, WHITE)
+	_rect(img, 17, 8, 5, 5, WHITE)
+	_rect(img, 13, 10, 2, 2, BLACK)
+	_rect(img, 19, 10, 2, 2, BLACK)
+	_px(img, 12, 9, MUR_EYE)
+	_px(img, 18, 9, MUR_EYE)
+	# crest
+	_rect(img, 14, 2, 4, 5, MUR_L)
+	_px(img, 13, 3, MUR_L)
+	_px(img, 18, 3, MUR_L)
+	# mouth
+	_rect(img, 13, 14, 6, 2, MUR_MOUTH)
+	# arm fins
+	_rect(img, 6, 16, 4, 4, MUR_L)
+	_rect(img, 22, 16, 4, 4, MUR_L)
+	_save(img, "res://assets/sprites/enemies/murloc.png")
+
+
+func _gen_hogger() -> void:
+	var img := Image.create(48, 48, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# legs
+	_rect(img, 14, 34, 8, 13, GNOLL_F)
+	_rect(img, 26, 34, 8, 13, GNOLL_F)
+	_rect(img, 14, 45, 8, 3, BLACK)
+	_rect(img, 26, 45, 8, 3, BLACK)
+	# body
+	_rect(img, 12, 20, 24, 16, CLOTH_R)
+	_rect(img, 14, 22, 20, 4, GOLD)
+	_rect(img, 12, 18, 24, 5, GNOLL)
+	# head
+	_rect(img, 14, 6, 20, 14, GNOLL)
+	_rect(img, 10, 14, 8, 7, GNOLL_D) # snout
+	_px(img, 12, 16, BLACK)
+	_rect(img, 12, 4, 6, 8, GNOLL_D) # ear
+	_rect(img, 30, 4, 6, 8, GNOLL_D)
+	_rect(img, 20, 8, 6, 5, GNOLL_F) # mane
+	_rect(img, 22, 12, 3, 3, BLACK)
+	_rect(img, 28, 12, 3, 3, BLACK)
+	# huge club
+	_rect(img, 36, 16, 6, 22, Color("5a3a1c"))
+	_rect(img, 34, 12, 10, 8, Color("4a2e14"))
+	_rect(img, 35, 13, 8, 6, Color("6a4a28"))
+	_save(img, "res://assets/sprites/enemies/hogger.png")
+
+
+func _gen_weapons() -> void:
+	var slash := Image.create(40, 24, false, Image.FORMAT_RGBA8)
+	slash.fill(Color(0, 0, 0, 0))
+	for i in 18:
+		var y := 4 + int(sin(i * 0.28) * 6.0)
+		_rect(slash, 4 + i * 2, y, 2, 4, GOLD_L)
+		_rect(slash, 4 + i * 2, y + 1, 2, 2, WHITE)
+	_save(slash, "res://assets/sprites/weapons/holy_slash.png")
+
+	var hammer := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	hammer.fill(Color(0, 0, 0, 0))
+	_rect(hammer, 7, 6, 3, 9, Color("c0c8d4"))
+	_rect(hammer, 3, 2, 11, 6, GOLD)
+	_rect(hammer, 4, 3, 9, 4, GOLD_L)
+	_rect(hammer, 6, 14, 5, 2, LEATHER)
+	_save(hammer, "res://assets/sprites/weapons/hammer.png")
+
+	var ring := Image.create(96, 96, false, Image.FORMAT_RGBA8)
+	ring.fill(Color(0, 0, 0, 0))
+	_circle(ring, 48, 48, 42, Color(0.83, 0.63, 0.09, 0.55), false)
+	_circle(ring, 48, 48, 41, Color(1.0, 0.9, 0.4, 0.8), false)
+	_circle(ring, 48, 48, 40, Color(1.0, 0.95, 0.7, 0.5), false)
+	for a in 12:
+		var ang := a * TAU / 12.0
+		var x := 48 + int(cos(ang) * 28)
+		var y := 48 + int(sin(ang) * 28)
+		_px(ring, x, y, WHITE)
+	_save(ring, "res://assets/sprites/weapons/consecration.png")
+
+
+func _gen_fx() -> void:
+	var mote := Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	mote.fill(Color(0, 0, 0, 0))
+	_rect(mote, 2, 2, 4, 4, GOLD)
+	_rect(mote, 3, 3, 2, 2, WHITE)
+	_px(mote, 1, 3, GOLD_L)
+	_px(mote, 6, 4, GOLD_L)
+	_save(mote, "res://assets/sprites/fx/xp_mote.png")
+
+
+func _gen_props() -> void:
+	_gen_tree("res://assets/tiles/elwynn/tree_oak_a.png", 48, 64, 0)
+	_gen_tree("res://assets/tiles/elwynn/tree_oak_b.png", 48, 64, 1)
+	_gen_tree("res://assets/tiles/elwynn/tree_oak_c.png", 32, 48, 2)
+	_gen_lantern()
+	_gen_goldshire()
+
+
+func _gen_tree(path: String, w: int, h: int, variant: int) -> void:
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var tw := 6 + variant
+	var tx := int(w / 2.0) - int(tw / 2.0)
+	_rect(img, tx, h - 22, tw, 22, TRUNK)
+	_rect(img, tx + 1, h - 22, 2, 22, TRUNK_D)
+	var cx := int(w / 2.0)
+	var canopies := [
+		Vector2i(cx, h - 36),
+		Vector2i(cx - 6, h - 28),
+		Vector2i(cx + 6, h - 28),
+		Vector2i(cx, h - 24),
+	]
+	if variant == 1:
+		canopies.append(Vector2i(cx - 4, h - 40))
+	for p in canopies:
+		_circle(img, p.x, p.y, 10 + variant, LEAF)
+		_circle(img, p.x - 2, p.y - 2, 6, LEAF_L)
+		_circle(img, p.x + 3, p.y + 2, 5, LEAF_D)
+	_save(img, path)
+
+
+func _gen_lantern() -> void:
+	var img := Image.create(16, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	_rect(img, 7, 10, 2, 22, Color("4a3a28"))
+	_rect(img, 4, 4, 8, 8, Color("3a3020"))
+	_rect(img, 5, 5, 6, 6, CANDLE)
+	_rect(img, 6, 6, 4, 4, WHITE)
+	_save(img, "res://assets/tiles/elwynn/lantern.png")
+
+
+func _gen_goldshire() -> void:
+	var img := Image.create(256, 48, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var roofs := [20, 52, 88, 120, 160, 198]
+	for rx in roofs:
+		_rect(img, rx, 18, 28, 22, Color("3a2a18"))
+		_rect(img, rx + 2, 10, 24, 10, Color("6a2a18"))
+		_px(img, rx + 8, 24, CANDLE)
+		_px(img, rx + 9, 24, CANDLE)
+		_px(img, rx + 16, 28, CANDLE)
+	_rect(img, 0, 40, 256, 8, Color("1e3318"))
+	_save(img, "res://assets/tiles/elwynn/goldshire_silhouette.png")
+
+
+func _gen_ui() -> void:
+	var panel := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	panel.fill(Color("2a1c10"))
+	_outline_rect(panel, 0, 0, 16, 16, GOLD)
+	_save(panel, "res://assets/sprites/ui/panel.png")
