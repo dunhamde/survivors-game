@@ -69,7 +69,7 @@ func _pick(index: int) -> void:
 func _is_compact_mobile_ui() -> bool:
 	## iPhone / small touch screens: window CSS pixels are far smaller than the
 	## 1280x720 game viewport, so fixed dialog sizes become hard to read.
-	var win := DisplayServer.window_get_size()
+	var win := Vector2(DisplayServer.window_get_size())
 	var short_side := mini(win.x, win.y)
 	if short_side <= 0:
 		return OS.has_feature("mobile")
@@ -78,7 +78,13 @@ func _is_compact_mobile_ui() -> bool:
 		return true
 	var touch := DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
 	# Larger phones / small tablets with touch still need bigger type.
-	return touch and short_side < 600
+	if touch and short_side < 600:
+		return true
+	# Canvas stretched down onto a small window (common for mobile web).
+	var vp := get_viewport().get_visible_rect().size
+	if vp.y > 0.0 and win.y > 0.0 and (win.y / vp.y) < 0.72:
+		return true
+	return false
 
 
 func _apply_layout() -> void:
@@ -169,7 +175,7 @@ func _style_card(button: Button, mobile: bool, card_height: float) -> void:
 	if card_title:
 		_set_label_style(
 			card_title,
-			36 if mobile else 18,
+			38 if mobile else 18,
 			Color(0.98, 0.9, 0.55, 1),
 			mobile
 		)
@@ -179,7 +185,7 @@ func _style_card(button: Button, mobile: bool, card_height: float) -> void:
 	if card_desc:
 		_set_label_style(
 			card_desc,
-			30 if mobile else 13,
+			32 if mobile else 13,
 			Color(0.95, 0.92, 0.85, 1) if mobile else Color(1, 1, 1, 1),
 			mobile
 		)
