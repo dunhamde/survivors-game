@@ -9,7 +9,7 @@ signal choice_made(choice: Dictionary)
 @onready var vbox: VBoxContainer = $Center/Panel/Margin/VBox
 @onready var title_label: Label = $Center/Panel/Margin/VBox/Title
 @onready var subtitle_label: Label = $Center/Panel/Margin/VBox/Subtitle
-@onready var cards: HBoxContainer = $Center/Panel/Margin/VBox/Cards
+@onready var cards: GridContainer = $Center/Panel/Margin/VBox/Cards
 @onready var hint_label: Label = $Center/Panel/Margin/VBox/Hint
 
 var _choices: Array[Dictionary] = []
@@ -90,16 +90,19 @@ func _apply_layout() -> void:
 	if mobile:
 		# Nearly full-screen panel so cards use the phone display.
 		# Fonts are oversized in viewport space because iPhone canvas scale is ~0.5x.
-		panel.custom_minimum_size = Vector2(vp.x * 0.96, vp.y * 0.92)
-		margin.add_theme_constant_override("margin_left", 16)
-		margin.add_theme_constant_override("margin_top", 14)
-		margin.add_theme_constant_override("margin_right", 16)
-		margin.add_theme_constant_override("margin_bottom", 14)
-		vbox.add_theme_constant_override("separation", 12)
-		cards.add_theme_constant_override("separation", 12)
-		_set_label_style(title_label, 42, Color(0.95, 0.82, 0.4, 1), true)
-		_set_label_style(subtitle_label, 24, Color(0.92, 0.88, 0.78, 1), true)
-		_set_label_style(hint_label, 20, Color(0.85, 0.8, 0.62, 0.95), true)
+		# Stack cards vertically so each blessing gets full width and readable type.
+		panel.custom_minimum_size = Vector2(vp.x * 0.96, vp.y * 0.94)
+		margin.add_theme_constant_override("margin_left", 18)
+		margin.add_theme_constant_override("margin_top", 12)
+		margin.add_theme_constant_override("margin_right", 18)
+		margin.add_theme_constant_override("margin_bottom", 12)
+		vbox.add_theme_constant_override("separation", 10)
+		cards.columns = 1
+		cards.add_theme_constant_override("h_separation", 12)
+		cards.add_theme_constant_override("v_separation", 12)
+		_set_label_style(title_label, 44, Color(0.95, 0.82, 0.4, 1), true)
+		_set_label_style(subtitle_label, 26, Color(0.92, 0.88, 0.78, 1), true)
+		_set_label_style(hint_label, 22, Color(0.85, 0.8, 0.62, 0.95), true)
 		hint_label.text = "Tap a blessing to continue"
 		for button in cards.get_children():
 			_style_card(button as Button, true)
@@ -110,7 +113,9 @@ func _apply_layout() -> void:
 		margin.add_theme_constant_override("margin_right", 18)
 		margin.add_theme_constant_override("margin_bottom", 16)
 		vbox.add_theme_constant_override("separation", 12)
-		cards.add_theme_constant_override("separation", 12)
+		cards.columns = 3
+		cards.add_theme_constant_override("h_separation", 12)
+		cards.add_theme_constant_override("v_separation", 12)
 		_set_label_style(title_label, 26, Color(0.95, 0.82, 0.4, 1), false)
 		_set_label_style(subtitle_label, 14, Color(1, 1, 1, 1), false)
 		_set_label_style(hint_label, 12, Color(0.8, 0.74, 0.55, 0.85), false)
@@ -123,8 +128,8 @@ func _set_label_style(label: Label, font_size: int, color: Color, outline: bool)
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	if outline:
-		label.add_theme_constant_override("outline_size", 3)
-		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+		label.add_theme_constant_override("outline_size", 4)
+		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.92))
 	else:
 		label.add_theme_constant_override("outline_size", 0)
 
@@ -135,20 +140,20 @@ func _style_card(button: Button, mobile: bool) -> void:
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	if mobile:
-		button.custom_minimum_size = Vector2(180, 260)
+		# Wide full-width rows; height shared across the three stacked cards.
+		button.custom_minimum_size = Vector2(0, 140)
 	else:
 		button.custom_minimum_size = Vector2(200, 160)
 
 	var card_vbox := button.get_node_or_null("VBox") as VBoxContainer
 	if card_vbox == null:
 		return
-	card_vbox.add_theme_constant_override("separation", 12 if mobile else 8)
+	card_vbox.add_theme_constant_override("separation", 8 if mobile else 8)
 	if mobile:
-		# Give text more inset room inside the larger touch targets.
-		card_vbox.offset_left = 14.0
-		card_vbox.offset_top = 14.0
-		card_vbox.offset_right = -14.0
-		card_vbox.offset_bottom = -14.0
+		card_vbox.offset_left = 18.0
+		card_vbox.offset_top = 12.0
+		card_vbox.offset_right = -18.0
+		card_vbox.offset_bottom = -12.0
 	else:
 		card_vbox.offset_left = 10.0
 		card_vbox.offset_top = 10.0
@@ -160,21 +165,21 @@ func _style_card(button: Button, mobile: bool) -> void:
 	if card_title:
 		_set_label_style(
 			card_title,
-			30 if mobile else 18,
+			32 if mobile else 18,
 			Color(0.98, 0.9, 0.55, 1),
 			mobile
 		)
 		card_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		card_title.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		card_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if card_desc:
 		_set_label_style(
 			card_desc,
-			24 if mobile else 13,
+			26 if mobile else 13,
 			Color(0.95, 0.92, 0.85, 1) if mobile else Color(1, 1, 1, 1),
 			mobile
 		)
 		card_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		card_desc.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		card_desc.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		card_desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
