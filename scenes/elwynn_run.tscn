@@ -339,12 +339,10 @@ theme_override_font_sizes/font_size = 14
 text = "Choose a blessing"
 horizontal_alignment = 1
 
-[node name="Cards" type="GridContainer" parent="LevelUpUI/Root/Panel/Margin/VBox"]
+[node name="Cards" type="VBoxContainer" parent="LevelUpUI/Root/Panel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
-columns = 3
+theme_override_constants/separation = 12
 
 [node name="Card1" type="Button" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards"]
 custom_minimum_size = Vector2(200, 160)

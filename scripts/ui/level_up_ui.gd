@@ -3,11 +3,11 @@ extends CanvasLayer
 signal choice_made(choice: Dictionary)
 
 ## Target on-screen sizes in CSS pixels (points) for phone / touch web.
-const CSS_TITLE := 34.0
-const CSS_SUBTITLE := 22.0
-const CSS_CARD_TITLE := 28.0
-const CSS_CARD_DESC := 24.0
-const CSS_HINT := 18.0
+const CSS_TITLE := 30.0
+const CSS_SUBTITLE := 18.0
+const CSS_CARD_TITLE := 22.0
+const CSS_CARD_DESC := 18.0
+const CSS_HINT := 16.0
 
 @onready var dim: ColorRect = $Dim
 @onready var root: MarginContainer = $Root
@@ -16,7 +16,7 @@ const CSS_HINT := 18.0
 @onready var vbox: VBoxContainer = $Root/Panel/Margin/VBox
 @onready var title_label: Label = $Root/Panel/Margin/VBox/Title
 @onready var subtitle_label: Label = $Root/Panel/Margin/VBox/Subtitle
-@onready var cards: GridContainer = $Root/Panel/Margin/VBox/Cards
+@onready var cards: VBoxContainer = $Root/Panel/Margin/VBox/Cards
 @onready var hint_label: Label = $Root/Panel/Margin/VBox/Hint
 
 var _choices: Array[Dictionary] = []
@@ -101,19 +101,19 @@ func _is_compact_mobile_ui() -> bool:
 
 
 func _vp_font_for_css(css_px: float) -> int:
-	## Convert a desired on-screen CSS pixel size into a viewport font size.
+	## Convert desired on-screen CSS px into a viewport font size.
 	## Visual CSS ≈ font_vp * (css_short / vp_short).
 	var css := _window_css_size()
 	var vp := get_viewport().get_visible_rect().size
 	var css_short := mini(css.x, css.y)
 	var vp_short := mini(vp.x, vp.y)
-	var computed: int
 	if css_short <= 1.0 or vp_short <= 1.0:
-		computed = int(round(css_px * 3.0))
-	else:
-		computed = int(ceili(css_px * vp_short / css_short))
-	# Aggressive floor so HiDPI web never collapses body type below ~readable.
-	return maxi(computed, int(ceili(css_px * 3.0)))
+		return int(ceili(css_px * 2.2))
+	var computed := int(ceili(css_px * vp_short / css_short))
+	# If DPR was ignored, css_short is still device pixels and computed collapses.
+	if computed < int(css_px * 1.35):
+		return int(ceili(css_px * 2.2))
+	return computed
 
 
 func _apply_layout() -> void:
@@ -123,7 +123,6 @@ func _apply_layout() -> void:
 	var mobile := _is_compact_mobile_ui()
 
 	if mobile:
-		# Full-bleed: tiny root margins; expanding panel fills the phone canvas.
 		var pad := maxi(4, int(round(mini(vp.x, vp.y) * 0.01)))
 		root.add_theme_constant_override("margin_left", pad)
 		root.add_theme_constant_override("margin_top", pad)
@@ -132,29 +131,33 @@ func _apply_layout() -> void:
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		panel.custom_minimum_size = Vector2.ZERO
-		margin.add_theme_constant_override("margin_left", 12)
-		margin.add_theme_constant_override("margin_top", 8)
-		margin.add_theme_constant_override("margin_right", 12)
-		margin.add_theme_constant_override("margin_bottom", 8)
-		vbox.add_theme_constant_override("separation", 6)
-		cards.columns = 1
-		cards.add_theme_constant_override("h_separation", 8)
-		cards.add_theme_constant_override("v_separation", 10)
+		margin.add_theme_constant_override("margin_left", 14)
+		margin.add_theme_constant_override("margin_top", 10)
+		margin.add_theme_constant_override("margin_right", 14)
+		margin.add_theme_constant_override("margin_bottom", 10)
+		vbox.add_theme_constant_override("separation", 8)
+		cards.add_theme_constant_override("separation", 12)
 		var title_fs := _vp_font_for_css(CSS_TITLE)
 		var sub_fs := _vp_font_for_css(CSS_SUBTITLE)
 		var hint_fs := _vp_font_for_css(CSS_HINT)
+		var card_title_fs := _vp_font_for_css(CSS_CARD_TITLE)
+		var card_desc_fs := _vp_font_for_css(CSS_CARD_DESC)
 		_set_label_style(title_label, title_fs, Color(0.95, 0.82, 0.4, 1), true)
 		_set_label_style(subtitle_label, sub_fs, Color(0.92, 0.88, 0.78, 1), true)
 		_set_label_style(hint_label, hint_fs, Color(0.85, 0.8, 0.62, 0.95), true)
 		hint_label.text = "Tap a blessing to continue"
-		var header_budget := float(title_fs + sub_fs + hint_fs + 36)
+		var header_budget := float(title_fs + sub_fs + hint_fs + 40)
 		var usable_h := maxf(240.0, vp.y - float(pad * 2))
-		var card_h := maxf(180.0, (usable_h - header_budget) / 3.0)
+		var from_space := (usable_h - header_budget) / 3.0
+		var from_text := float(card_title_fs + card_desc_fs + 40)
+		var card_h := maxf(from_space, from_text)
 		for button in cards.get_children():
-			_style_card(button as Button, true, card_h)
+			_style_card(button as Button, true, card_h, card_title_fs, card_desc_fs)
 	else:
-		var dialog_w := mini(700.0, vp.x * 0.72)
-		var dialog_h := mini(420.0, vp.y * 0.7)
+		# Desktop: keep a comfortable centered dialog with a horizontal card row.
+		# Rebuild isn't needed — place cards in a wide inset panel.
+		var dialog_w := mini(920.0, vp.x * 0.85)
+		var dialog_h := mini(460.0, vp.y * 0.75)
 		var mx := int(maxf(0.0, (vp.x - dialog_w) * 0.5))
 		var my := int(maxf(0.0, (vp.y - dialog_h) * 0.5))
 		root.add_theme_constant_override("margin_left", mx)
@@ -169,47 +172,48 @@ func _apply_layout() -> void:
 		margin.add_theme_constant_override("margin_right", 18)
 		margin.add_theme_constant_override("margin_bottom", 16)
 		vbox.add_theme_constant_override("separation", 12)
-		cards.columns = 3
-		cards.add_theme_constant_override("h_separation", 12)
-		cards.add_theme_constant_override("v_separation", 12)
+		cards.add_theme_constant_override("separation", 12)
 		_set_label_style(title_label, 26, Color(0.95, 0.82, 0.4, 1), false)
 		_set_label_style(subtitle_label, 14, Color(1, 1, 1, 1), false)
 		_set_label_style(hint_label, 12, Color(0.8, 0.74, 0.55, 0.85), false)
 		hint_label.text = "Tap a card or press 1 / 2 / 3"
 		for button in cards.get_children():
-			_style_card(button as Button, false, 160.0)
+			_style_card(button as Button, false, 150.0, 18, 13)
 
 
 func _set_label_style(label: Label, font_size: int, color: Color, outline: bool) -> void:
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	if outline:
-		var outline_size := maxi(4, int(round(float(font_size) * 0.14)))
+		var outline_size := maxi(3, int(round(float(font_size) * 0.12)))
 		label.add_theme_constant_override("outline_size", outline_size)
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
 	else:
 		label.add_theme_constant_override("outline_size", 0)
 
 
-func _style_card(button: Button, mobile: bool, card_height: float) -> void:
+func _style_card(
+	button: Button,
+	mobile: bool,
+	card_height: float,
+	title_fs: int,
+	desc_fs: int
+) -> void:
 	if button == null:
 		return
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	if mobile:
-		button.custom_minimum_size = Vector2(0, card_height)
-	else:
-		button.custom_minimum_size = Vector2(200, card_height)
+	button.custom_minimum_size = Vector2(0 if mobile else 200, card_height)
 
 	var card_vbox := button.get_node_or_null("VBox") as VBoxContainer
 	if card_vbox == null:
 		return
-	card_vbox.add_theme_constant_override("separation", 6 if mobile else 8)
+	card_vbox.add_theme_constant_override("separation", 8 if mobile else 8)
 	if mobile:
 		card_vbox.offset_left = 16.0
-		card_vbox.offset_top = 10.0
+		card_vbox.offset_top = 12.0
 		card_vbox.offset_right = -16.0
-		card_vbox.offset_bottom = -10.0
+		card_vbox.offset_bottom = -12.0
 		card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	else:
 		card_vbox.offset_left = 10.0
@@ -221,23 +225,18 @@ func _style_card(button: Button, mobile: bool, card_height: float) -> void:
 	var card_title := card_vbox.get_node_or_null("Title") as Label
 	var card_desc := card_vbox.get_node_or_null("Desc") as Label
 	if card_title:
-		_set_label_style(
-			card_title,
-			_vp_font_for_css(CSS_CARD_TITLE) if mobile else 18,
-			Color(0.98, 0.9, 0.55, 1),
-			mobile
-		)
+		_set_label_style(card_title, title_fs, Color(0.98, 0.9, 0.55, 1), mobile)
 		card_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		card_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if card_desc:
 		_set_label_style(
 			card_desc,
-			_vp_font_for_css(CSS_CARD_DESC) if mobile else 13,
+			desc_fs,
 			Color(0.95, 0.92, 0.85, 1) if mobile else Color(1, 1, 1, 1),
 			mobile
 		)
 		card_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		card_desc.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		card_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		card_desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
