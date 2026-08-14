@@ -49,30 +49,47 @@ func _draw() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+	# Only begin gestures inside the control; drag/release are tracked globally in
+	# `_input` so left/down still work when the finger leaves the control rect
+	# (common near screen edges).
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed and not _active:
 			_begin(touch.index, touch.position)
-			accept_event()
-		elif not touch.pressed and touch.index == _pointer_id:
-			_end()
-			accept_event()
-	elif event is InputEventScreenDrag:
-		var drag := event as InputEventScreenDrag
-		if _active and drag.index == _pointer_id:
-			_update(drag.position)
 			accept_event()
 	elif event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		var mouse := event as InputEventMouseButton
 		if mouse.pressed and not _active:
 			_begin(-2, mouse.position)
 			accept_event()
-		elif not mouse.pressed and _pointer_id == -2:
+
+
+func _input(event: InputEvent) -> void:
+	if not _active:
+		return
+
+	if event is InputEventScreenDrag:
+		var drag := event as InputEventScreenDrag
+		if drag.index == _pointer_id:
+			_update(_to_local(drag.position))
+			get_viewport().set_input_as_handled()
+	elif event is InputEventScreenTouch:
+		var touch := event as InputEventScreenTouch
+		if not touch.pressed and touch.index == _pointer_id:
 			_end()
-			accept_event()
-	elif event is InputEventMouseMotion and _active and _pointer_id == -2:
-		_update((event as InputEventMouseMotion).position)
-		accept_event()
+			get_viewport().set_input_as_handled()
+	elif event is InputEventMouseMotion and _pointer_id == -2:
+		_update(_to_local((event as InputEventMouseMotion).position))
+		get_viewport().set_input_as_handled()
+	elif event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		var mouse := event as InputEventMouseButton
+		if not mouse.pressed and _pointer_id == -2:
+			_end()
+			get_viewport().set_input_as_handled()
+
+
+func _to_local(viewport_pos: Vector2) -> Vector2:
+	return get_global_transform_with_canvas().affine_inverse() * viewport_pos
 
 
 func _begin(pointer_id: int, local_pos: Vector2) -> void:
