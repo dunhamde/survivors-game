@@ -3,11 +3,11 @@ extends CanvasLayer
 signal choice_made(choice: Dictionary)
 
 ## Target on-screen sizes in CSS pixels (points) for phone / touch web.
-const CSS_TITLE := 30.0
-const CSS_SUBTITLE := 18.0
-const CSS_CARD_TITLE := 22.0
-const CSS_CARD_DESC := 18.0
-const CSS_HINT := 16.0
+const CSS_TITLE := 34.0
+const CSS_SUBTITLE := 20.0
+const CSS_CARD_TITLE := 26.0
+const CSS_CARD_DESC := 20.0
+const CSS_HINT := 17.0
 
 @onready var dim: ColorRect = $Dim
 @onready var root: MarginContainer = $Root
