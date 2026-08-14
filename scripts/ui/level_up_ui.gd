@@ -3,14 +3,14 @@ extends CanvasLayer
 signal choice_made(choice: Dictionary)
 
 ## Target on-screen sizes in CSS pixels (points) for phone / touch web.
-const CSS_TITLE := 30.0
+const CSS_TITLE := 32.0
 const CSS_SUBTITLE := 20.0
-const CSS_CARD_TITLE := 24.0
-const CSS_CARD_DESC := 20.0
-const CSS_HINT := 17.0
+const CSS_CARD_TITLE := 26.0
+const CSS_CARD_DESC := 22.0
+const CSS_HINT := 18.0
 
 @onready var dim: ColorRect = $Dim
-@onready var root: Control = $Root
+@onready var root: MarginContainer = $Root
 @onready var panel: PanelContainer = $Root/Panel
 @onready var margin: MarginContainer = $Root/Panel/Margin
 @onready var vbox: VBoxContainer = $Root/Panel/Margin/VBox
@@ -20,6 +20,8 @@ const CSS_HINT := 17.0
 @onready var hint_label: Label = $Root/Panel/Margin/VBox/Hint
 
 var _choices: Array[Dictionary] = []
+var _saved_content_scale: float = 1.0
+var _scale_boosted: bool = false
 
 
 func _ready() -> void:
@@ -34,6 +36,7 @@ func _ready() -> void:
 
 func show_choices(choices: Array[Dictionary]) -> void:
 	_choices = choices
+	_boost_scale_for_mobile()
 	_apply_layout()
 	visible = true
 	for i in cards.get_child_count():
@@ -42,7 +45,6 @@ func show_choices(choices: Array[Dictionary]) -> void:
 		button.get_node("VBox/Title").text = str(choice.get("title", ""))
 		button.get_node("VBox/Desc").text = str(choice.get("desc", ""))
 		button.visible = i < choices.size()
-	# Re-apply after the panel has a real size from full-bleed anchors.
 	call_deferred("_apply_layout")
 	if cards.get_child_count() > 0:
 		(cards.get_child(0) as Button).grab_focus()
@@ -50,6 +52,7 @@ func show_choices(choices: Array[Dictionary]) -> void:
 
 func hide_ui() -> void:
 	visible = false
+	_restore_scale()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -90,13 +93,10 @@ func _is_compact_mobile_ui() -> bool:
 		DisplayServer.is_touchscreen_available()
 		or OS.has_feature("mobile")
 	)
-	# Phone-class CSS short edge (iPhone landscape ~320–430 CSS px).
 	if short_side > 0.0 and short_side < 520.0:
 		return true
-	# Touch tablets / large phones in CSS points.
 	if touch and short_side > 0.0 and short_side < 720.0:
 		return true
-	# GitHub Pages / mobile Safari: always use the readable layout on touch web.
 	if OS.has_feature("web") and touch:
 		return true
 	if OS.has_feature("mobile"):
@@ -104,54 +104,64 @@ func _is_compact_mobile_ui() -> bool:
 	return false
 
 
+func _boost_scale_for_mobile() -> void:
+	## While level-up is open, enlarge the whole UI so type hits readable
+	## CSS sizes on small HiDPI phone screens. Gameplay is paused.
+	_restore_scale()
+	if not _is_compact_mobile_ui():
+		return
+	var win := get_window()
+	if win == null:
+		return
+	var css := _window_css_size()
+	var short_css := mini(css.x, css.y)
+	if short_css <= 1.0:
+		return
+	# Aim for the short edge to feel at least ~560 CSS px of UI space.
+	var boost := clampf(560.0 / short_css, 1.15, 2.0)
+	_saved_content_scale = win.content_scale_factor
+	win.content_scale_factor = _saved_content_scale * boost
+	_scale_boosted = true
+
+
+func _restore_scale() -> void:
+	if not _scale_boosted:
+		return
+	var win := get_window()
+	if win != null:
+		win.content_scale_factor = _saved_content_scale
+	_scale_boosted = false
+
+
 func _vp_font_for_css(css_px: float) -> int:
 	## Convert a desired on-screen CSS pixel size into a viewport font size.
-	## Visual CSS size ≈ font_vp * (css_short / vp_short).
 	var css := _window_css_size()
 	var vp := get_viewport().get_visible_rect().size
 	var css_short := mini(css.x, css.y)
 	var vp_short := mini(vp.x, vp.y)
 	var computed: int
 	if css_short <= 1.0 or vp_short <= 1.0:
-		computed = int(round(css_px * 2.5))
+		computed = int(round(css_px * 2.6))
 	else:
 		computed = int(ceili(css_px * vp_short / css_short))
-	# Floor protects against DPR mis-reports that would leave type unreadably small.
-	return maxi(computed, int(ceili(css_px * 2.4)))
-
-
-func _set_panel_full_bleed(vp: Vector2) -> void:
-	## Anchor the panel to nearly the full viewport (not a tiny centered dialog).
-	var pad_x := maxf(8.0, vp.x * 0.015)
-	var pad_y := maxf(6.0, vp.y * 0.02)
-	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	panel.offset_left = pad_x
-	panel.offset_top = pad_y
-	panel.offset_right = -pad_x
-	panel.offset_bottom = -pad_y
-	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-
-
-func _set_panel_desktop_dialog() -> void:
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.offset_left = -320.0
-	panel.offset_top = -180.0
-	panel.offset_right = 320.0
-	panel.offset_bottom = 180.0
-	# Let content define height; width stays comfortable on desktop.
-	panel.reset_size()
-	panel.custom_minimum_size = Vector2(640, 0)
+	return maxi(computed, int(ceili(css_px * 2.6)))
 
 
 func _apply_layout() -> void:
-	if panel == null:
+	if panel == null or root == null:
 		return
 	var vp := get_viewport().get_visible_rect().size
 	var mobile := _is_compact_mobile_ui()
 
 	if mobile:
-		_set_panel_full_bleed(vp)
+		# Full-bleed: MarginContainer root + expanding panel fill the screen.
+		var pad := maxi(6, int(round(mini(vp.x, vp.y) * 0.012)))
+		root.add_theme_constant_override("margin_left", pad)
+		root.add_theme_constant_override("margin_top", pad)
+		root.add_theme_constant_override("margin_right", pad)
+		root.add_theme_constant_override("margin_bottom", pad)
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		panel.custom_minimum_size = Vector2.ZERO
 		margin.add_theme_constant_override("margin_left", 14)
 		margin.add_theme_constant_override("margin_top", 10)
@@ -169,12 +179,23 @@ func _apply_layout() -> void:
 		_set_label_style(hint_label, hint_fs, Color(0.85, 0.8, 0.62, 0.95), true)
 		hint_label.text = "Tap a blessing to continue"
 		var header_budget := float(title_fs + sub_fs + hint_fs + 48)
-		var usable_h := maxf(200.0, panel.size.y if panel.size.y > 1.0 else vp.y * 0.96)
-		var card_h := maxf(160.0, (usable_h - header_budget) / 3.0)
+		var usable_h := maxf(220.0, vp.y - float(pad * 2) - 8.0)
+		var card_h := maxf(170.0, (usable_h - header_budget) / 3.0)
 		for button in cards.get_children():
 			_style_card(button as Button, true, card_h)
 	else:
-		_set_panel_desktop_dialog()
+		# Desktop: inset the panel so it reads as a centered dialog.
+		var dialog_w := mini(700.0, vp.x * 0.72)
+		var dialog_h := mini(420.0, vp.y * 0.7)
+		var mx := int(maxf(0.0, (vp.x - dialog_w) * 0.5))
+		var my := int(maxf(0.0, (vp.y - dialog_h) * 0.5))
+		root.add_theme_constant_override("margin_left", mx)
+		root.add_theme_constant_override("margin_top", my)
+		root.add_theme_constant_override("margin_right", mx)
+		root.add_theme_constant_override("margin_bottom", my)
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		panel.custom_minimum_size = Vector2.ZERO
 		margin.add_theme_constant_override("margin_left", 18)
 		margin.add_theme_constant_override("margin_top", 16)
 		margin.add_theme_constant_override("margin_right", 18)
