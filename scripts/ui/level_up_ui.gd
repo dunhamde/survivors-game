@@ -91,21 +91,24 @@ func _apply_layout() -> void:
 		# Nearly full-screen panel so cards use the phone display.
 		# Fonts are oversized in viewport space because iPhone canvas scale is ~0.5x.
 		# Stack cards vertically so each blessing gets full width and readable type.
-		panel.custom_minimum_size = Vector2(vp.x * 0.96, vp.y * 0.94)
-		margin.add_theme_constant_override("margin_left", 18)
-		margin.add_theme_constant_override("margin_top", 12)
-		margin.add_theme_constant_override("margin_right", 18)
-		margin.add_theme_constant_override("margin_bottom", 12)
-		vbox.add_theme_constant_override("separation", 10)
+		panel.custom_minimum_size = Vector2(vp.x * 0.98, vp.y * 0.96)
+		margin.add_theme_constant_override("margin_left", 14)
+		margin.add_theme_constant_override("margin_top", 8)
+		margin.add_theme_constant_override("margin_right", 14)
+		margin.add_theme_constant_override("margin_bottom", 8)
+		vbox.add_theme_constant_override("separation", 8)
 		cards.columns = 1
-		cards.add_theme_constant_override("h_separation", 12)
-		cards.add_theme_constant_override("v_separation", 12)
-		_set_label_style(title_label, 44, Color(0.95, 0.82, 0.4, 1), true)
-		_set_label_style(subtitle_label, 26, Color(0.92, 0.88, 0.78, 1), true)
-		_set_label_style(hint_label, 22, Color(0.85, 0.8, 0.62, 0.95), true)
+		cards.add_theme_constant_override("h_separation", 10)
+		cards.add_theme_constant_override("v_separation", 10)
+		_set_label_style(title_label, 48, Color(0.95, 0.82, 0.4, 1), true)
+		_set_label_style(subtitle_label, 28, Color(0.92, 0.88, 0.78, 1), true)
+		_set_label_style(hint_label, 24, Color(0.85, 0.8, 0.62, 0.95), true)
 		hint_label.text = "Tap a blessing to continue"
+		# Share remaining panel height across the three stacked cards.
+		var header_budget := 130.0
+		var card_h := maxf(170.0, (vp.y * 0.96 - header_budget) / 3.0)
 		for button in cards.get_children():
-			_style_card(button as Button, true)
+			_style_card(button as Button, true, card_h)
 	else:
 		panel.custom_minimum_size = Vector2.ZERO
 		margin.add_theme_constant_override("margin_left", 18)
@@ -121,51 +124,52 @@ func _apply_layout() -> void:
 		_set_label_style(hint_label, 12, Color(0.8, 0.74, 0.55, 0.85), false)
 		hint_label.text = "Tap a card or press 1 / 2 / 3"
 		for button in cards.get_children():
-			_style_card(button as Button, false)
+			_style_card(button as Button, false, 160.0)
 
 
 func _set_label_style(label: Label, font_size: int, color: Color, outline: bool) -> void:
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	if outline:
-		label.add_theme_constant_override("outline_size", 4)
-		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.92))
+		label.add_theme_constant_override("outline_size", 5)
+		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
 	else:
 		label.add_theme_constant_override("outline_size", 0)
 
 
-func _style_card(button: Button, mobile: bool) -> void:
+func _style_card(button: Button, mobile: bool, card_height: float) -> void:
 	if button == null:
 		return
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	if mobile:
-		# Wide full-width rows; height shared across the three stacked cards.
-		button.custom_minimum_size = Vector2(0, 140)
+		button.custom_minimum_size = Vector2(0, card_height)
 	else:
-		button.custom_minimum_size = Vector2(200, 160)
+		button.custom_minimum_size = Vector2(200, card_height)
 
 	var card_vbox := button.get_node_or_null("VBox") as VBoxContainer
 	if card_vbox == null:
 		return
-	card_vbox.add_theme_constant_override("separation", 8 if mobile else 8)
+	card_vbox.add_theme_constant_override("separation", 6 if mobile else 8)
 	if mobile:
-		card_vbox.offset_left = 18.0
-		card_vbox.offset_top = 12.0
-		card_vbox.offset_right = -18.0
-		card_vbox.offset_bottom = -12.0
+		card_vbox.offset_left = 20.0
+		card_vbox.offset_top = 14.0
+		card_vbox.offset_right = -20.0
+		card_vbox.offset_bottom = -14.0
+		card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	else:
 		card_vbox.offset_left = 10.0
 		card_vbox.offset_top = 10.0
 		card_vbox.offset_right = -10.0
 		card_vbox.offset_bottom = -10.0
+		card_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
 
 	var card_title := card_vbox.get_node_or_null("Title") as Label
 	var card_desc := card_vbox.get_node_or_null("Desc") as Label
 	if card_title:
 		_set_label_style(
 			card_title,
-			32 if mobile else 18,
+			36 if mobile else 18,
 			Color(0.98, 0.9, 0.55, 1),
 			mobile
 		)
@@ -175,11 +179,11 @@ func _style_card(button: Button, mobile: bool) -> void:
 	if card_desc:
 		_set_label_style(
 			card_desc,
-			26 if mobile else 13,
+			30 if mobile else 13,
 			Color(0.95, 0.92, 0.85, 1) if mobile else Color(1, 1, 1, 1),
 			mobile
 		)
 		card_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		card_desc.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		card_desc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		card_desc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
