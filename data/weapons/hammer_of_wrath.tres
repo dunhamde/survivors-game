@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/hammer_of_wrath.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"hammer_of_wrath"
+display_name = "Hammer of Wrath"
+description = "A homing hammer that hunts the wounded."
+scene = ExtResource("2")
+max_level = 5
+upgrade_hint = "+Damage, extra hammers, faster throws"
+base_damage = 28.0
+damage_per_level = 8.0
+base_cooldown = 1.75
+cooldown_per_level = -0.12
+base_area = 16.0
+area_per_level = 0.0
+base_count = 1

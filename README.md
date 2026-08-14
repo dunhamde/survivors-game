@@ -1,6 +1,6 @@
 # survivors-game
 
-A survivors-style action game built with **Godot 4.7**.
+**Elwynn Survivors** — a Warcraft-themed survivors vertical slice (Paladin in Elwynn Forest), built with **Godot 4.7**.
 
 ## Run (desktop)
 
@@ -37,23 +37,14 @@ python3 -m http.server -d build/web 8080
 | --- | --- |
 | WASD / Arrow keys | Move (desktop) |
 | On-screen stick | Move (touch / phone) |
-| (automatic) | Fire at nearest enemy |
-| Enter or **Retry** | Restart after death |
+| (automatic) | Attack with equipped weapons |
+| Tap upgrade cards (or 1 / 2 / 3) | Level-up choice |
+| Enter or **Retry** | Restart after the run ends |
 
-## Project layout
+## Current slice
 
-```
-scenes/     # main, player, enemy, projectile
-scripts/    # gameplay scripts
-export_presets.cfg
-.github/workflows/deploy-pages.yml
-project.godot
-```
-
-## Current prototype
-
-- Top-down movement
-- Auto-targeting weapon
-- Enemy waves that ramp up over time
-- Health, kills, survival timer, and retry
+- Elwynn Forest map + Goldshire backdrop
+- Paladin with Holy Strike, Consecration, Hammer of Wrath
+- Gnolls, kobolds, murlocs, and Hogger
+- XP, level-ups, and upgrade choices
 - Touch controls + GitHub Pages web build
