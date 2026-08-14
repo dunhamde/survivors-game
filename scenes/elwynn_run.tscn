@@ -49,27 +49,35 @@ bg_color = Color(0.72, 0.22, 0.08, 1)
 
 [sub_resource type="StyleBoxFlat" id="Card"]
 bg_color = Color(0.18, 0.12, 0.07, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
 border_color = Color(0.83, 0.65, 0.22, 1)
-content_margin_left = 12.0
-content_margin_top = 12.0
-content_margin_right = 12.0
-content_margin_bottom = 12.0
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
 
 [sub_resource type="StyleBoxFlat" id="CardHover"]
 bg_color = Color(0.28, 0.2, 0.1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
 border_color = Color(0.95, 0.82, 0.35, 1)
-content_margin_left = 12.0
-content_margin_top = 12.0
-content_margin_right = 12.0
-content_margin_bottom = 12.0
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
 
 [node name="ElwynnRun" type="Node2D" groups=["run"]]
 script = ExtResource("1")
@@ -298,6 +306,8 @@ theme_override_styles/panel = SubResource("PanelGold")
 
 [node name="Margin" type="MarginContainer" parent="LevelUpUI/Center/Panel"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 18
@@ -305,6 +315,8 @@ theme_override_constants/margin_bottom = 16
 
 [node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox"]
@@ -322,12 +334,15 @@ horizontal_alignment = 1
 
 [node name="Cards" type="HBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 12
 alignment = 1
 
 [node name="Card1" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(190, 150)
+custom_minimum_size = Vector2(200, 160)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/normal = SubResource("Card")
 theme_override_styles/hover = SubResource("CardHover")
 theme_override_styles/pressed = SubResource("CardHover")
@@ -351,18 +366,21 @@ theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
 theme_override_font_sizes/font_size = 18
 text = "Holy Strike"
 horizontal_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card1/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
 text = "A blessed swing"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Card2" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(190, 150)
+custom_minimum_size = Vector2(200, 160)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/normal = SubResource("Card")
 theme_override_styles/hover = SubResource("CardHover")
 theme_override_styles/pressed = SubResource("CardHover")
@@ -386,18 +404,21 @@ theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
 theme_override_font_sizes/font_size = 18
 text = "Consecration"
 horizontal_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card2/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
 text = "Holy fire"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Card3" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
-custom_minimum_size = Vector2(190, 150)
+custom_minimum_size = Vector2(200, 160)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/normal = SubResource("Card")
 theme_override_styles/hover = SubResource("CardHover")
 theme_override_styles/pressed = SubResource("CardHover")
@@ -421,10 +442,11 @@ theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
 theme_override_font_sizes/font_size = 18
 text = "Hammer of Wrath"
 horizontal_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
 
 [node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card3/VBox"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
 text = "Homing hammer"
 horizontal_alignment = 1
