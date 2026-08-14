@@ -86,9 +86,21 @@ func take_damage(amount: int) -> void:
 
 func _die() -> void:
 	died.emit()
+	set_physics_process(false)
+	velocity = Vector2.ZERO
+	if collision != null:
+		collision.set_deferred("disabled", true)
 	var run := get_tree().get_first_node_in_group("run")
 	if run != null and run.has_method("register_kill"):
 		run.register_kill()
+	# Spawning an Area2D (XP mote) during body_entered / overlapping-body
+	# queries changes monitoring while the physics server is flushing.
+	call_deferred("_finish_death")
+
+
+func _finish_death() -> void:
+	if not is_instance_valid(self):
+		return
 	_drop_xp()
 	queue_free()
 
@@ -98,9 +110,9 @@ func _drop_xp() -> void:
 		return
 	var mote := preload("res://scenes/xp_mote.tscn").instantiate() as Area2D
 	mote.amount = xp_value
-	mote.global_position = global_position + Vector2(randf_range(-8.0, 8.0), randf_range(-6.0, 6.0))
+	var spawn_pos := global_position + Vector2(randf_range(-8.0, 8.0), randf_range(-6.0, 6.0))
 	var parent := get_tree().get_first_node_in_group("entities")
-	if parent != null:
-		parent.add_child(mote)
-	else:
-		get_tree().current_scene.add_child(mote)
+	if parent == null:
+		parent = get_tree().current_scene
+	parent.add_child(mote)
+	mote.global_position = spawn_pos
