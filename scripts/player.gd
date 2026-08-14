@@ -35,6 +35,10 @@ func _physics_process(delta: float) -> void:
 		_apply_contact_damage()
 
 	var input_vector := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	if input_vector.length_squared() < 0.0001:
+		var stick := get_tree().get_first_node_in_group("virtual_joystick")
+		if stick != null and stick.has_method("get_vector"):
+			input_vector = stick.get_vector()
 	velocity = input_vector * move_speed
 	move_and_slide()
 

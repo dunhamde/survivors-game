@@ -1,0 +1,79 @@
+name: Deploy Web to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.1"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot binary and templates
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            .godot-ci
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-linux-templates-v1
+
+      - name: Install Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p .godot-ci "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          curl -sL -o .godot-ci/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl -sL -o .godot-ci/templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -o .godot-ci/godot.zip -d .godot-ci
+          unzip -o .godot-ci/templates.tpz -d .godot-ci/templates_extract
+          cp .godot-ci/templates_extract/templates/* \
+            "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+          chmod +x .godot-ci/Godot_v${GODOT_VERSION}-stable_linux.x86_64
+
+      - name: Ensure Godot binary is executable
+        run: chmod +x ".godot-ci/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+
+      - name: Import project
+        run: |
+          "./.godot-ci/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+            --headless --path . --import || true
+
+      - name: Export Web (single-threaded)
+        run: |
+          mkdir -p build/web
+          "./.godot-ci/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
+            --headless --path . --export-release "Web" "build/web/index.html"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

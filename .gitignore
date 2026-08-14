@@ -2,10 +2,14 @@
 .godot/
 *.translation
 
-# Exports / local overrides
+# Local export overrides (committed export_presets.cfg is the shared Web preset)
 export.cfg
-export_presets.cfg
 *.import
+
+# Build output / CI tooling
+build/
+docs/web/
+.godot-ci/
 
 # OS / editor noise
 .DS_Store
