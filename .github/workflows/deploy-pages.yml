@@ -3,6 +3,8 @@ name: Deploy Web to GitHub Pages
 on:
   push:
     branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -61,13 +63,18 @@ jobs:
           mkdir -p build/web
           "./.godot-ci/Godot_v${GODOT_VERSION}-stable_linux.x86_64" \
             --headless --path . --export-release "Web" "build/web/index.html"
+          test -f build/web/index.html
+          test -f build/web/index.wasm
+          grep -q "GODOT_THREADS_ENABLED = false" build/web/index.html
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
