@@ -29,6 +29,7 @@ var _won: bool = false
 
 
 func _ready() -> void:
+	_configure_phone_content_scale()
 	end_panel.visible = false
 	boss_wrap.visible = false
 	retry_button.pressed.connect(_on_retry_pressed)
@@ -43,6 +44,26 @@ func _ready() -> void:
 	kills_label.text = "Kills 0"
 	_update_time()
 	_update_hint()
+
+
+func _configure_phone_content_scale() -> void:
+	## On HiDPI phone web, the 1280×720 base shrinks too far. Use a shorter
+	## content base so HUD / level-up UI map larger onto CSS pixels.
+	var touch_web := (
+		OS.has_feature("mobile")
+		or (OS.has_feature("web") and DisplayServer.is_touchscreen_available())
+	)
+	if not touch_web:
+		return
+	var dpr := maxf(DisplayServer.screen_get_scale(), 0.5)
+	var css := Vector2(DisplayServer.window_get_size()) / dpr
+	var short_side := mini(css.x, css.y)
+	if short_side <= 0.0 or short_side >= 520.0:
+		return
+	var win := get_window()
+	if win == null:
+		return
+	win.content_scale_size = Vector2i(960, 540)
 
 
 func _process(delta: float) -> void:

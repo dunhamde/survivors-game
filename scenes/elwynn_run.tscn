@@ -293,18 +293,25 @@ grow_vertical = 2
 mouse_filter = 0
 color = Color(0, 0, 0, 0.5)
 
-[node name="Center" type="CenterContainer" parent="LevelUpUI"]
+[node name="Root" type="MarginContainer" parent="LevelUpUI"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
 
-[node name="Panel" type="PanelContainer" parent="LevelUpUI/Center"]
+[node name="Panel" type="PanelContainer" parent="LevelUpUI/Root"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("PanelGold")
 
-[node name="Margin" type="MarginContainer" parent="LevelUpUI/Center/Panel"]
+[node name="Margin" type="MarginContainer" parent="LevelUpUI/Root/Panel"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -313,33 +320,31 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 16
 
-[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Root/Panel/Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+[node name="Title" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
 theme_override_font_sizes/font_size = 26
 text = "Level Up"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+[node name="Subtitle" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 text = "Choose a blessing"
 horizontal_alignment = 1
 
-[node name="Cards" type="GridContainer" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+[node name="Cards" type="VBoxContainer" parent="LevelUpUI/Root/Panel/Margin/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
-columns = 3
+theme_override_constants/separation = 12
 
-[node name="Card1" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
+[node name="Card1" type="Button" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards"]
 custom_minimum_size = Vector2(200, 160)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -349,7 +354,7 @@ theme_override_styles/hover = SubResource("CardHover")
 theme_override_styles/pressed = SubResource("CardHover")
 theme_override_styles/focus = SubResource("CardHover")
 
-[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card1"]
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card1"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -361,7 +366,7 @@ offset_bottom = -10.0
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card1/VBox"]
+[node name="Title" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card1/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
 theme_override_font_sizes/font_size = 18
@@ -369,7 +374,7 @@ text = "Holy Strike"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card1/VBox"]
+[node name="Desc" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card1/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
@@ -377,7 +382,7 @@ text = "A blessed swing"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Card2" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
+[node name="Card2" type="Button" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards"]
 custom_minimum_size = Vector2(200, 160)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -387,7 +392,7 @@ theme_override_styles/hover = SubResource("CardHover")
 theme_override_styles/pressed = SubResource("CardHover")
 theme_override_styles/focus = SubResource("CardHover")
 
-[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card2"]
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card2"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -399,7 +404,7 @@ offset_bottom = -10.0
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card2/VBox"]
+[node name="Title" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card2/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
 theme_override_font_sizes/font_size = 18
@@ -407,7 +412,7 @@ text = "Consecration"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card2/VBox"]
+[node name="Desc" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card2/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
@@ -415,7 +420,7 @@ text = "Holy fire"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Card3" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
+[node name="Card3" type="Button" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards"]
 custom_minimum_size = Vector2(200, 160)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -425,7 +430,7 @@ theme_override_styles/hover = SubResource("CardHover")
 theme_override_styles/pressed = SubResource("CardHover")
 theme_override_styles/focus = SubResource("CardHover")
 
-[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card3"]
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card3"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -437,7 +442,7 @@ offset_bottom = -10.0
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card3/VBox"]
+[node name="Title" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card3/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
 theme_override_font_sizes/font_size = 18
@@ -445,7 +450,7 @@ text = "Hammer of Wrath"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card3/VBox"]
+[node name="Desc" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox/Cards/Card3/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
@@ -453,7 +458,7 @@ text = "Homing hammer"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+[node name="Hint" type="Label" parent="LevelUpUI/Root/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
 theme_override_font_sizes/font_size = 12
