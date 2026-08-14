@@ -3,21 +3,21 @@ extends CanvasLayer
 signal choice_made(choice: Dictionary)
 
 ## Target on-screen sizes in CSS pixels (points) for phone / touch web.
-const CSS_TITLE := 28.0
-const CSS_SUBTITLE := 18.0
-const CSS_CARD_TITLE := 22.0
-const CSS_CARD_DESC := 18.0
-const CSS_HINT := 16.0
+const CSS_TITLE := 30.0
+const CSS_SUBTITLE := 20.0
+const CSS_CARD_TITLE := 24.0
+const CSS_CARD_DESC := 20.0
+const CSS_HINT := 17.0
 
 @onready var dim: ColorRect = $Dim
-@onready var center: CenterContainer = $Center
-@onready var panel: PanelContainer = $Center/Panel
-@onready var margin: MarginContainer = $Center/Panel/Margin
-@onready var vbox: VBoxContainer = $Center/Panel/Margin/VBox
-@onready var title_label: Label = $Center/Panel/Margin/VBox/Title
-@onready var subtitle_label: Label = $Center/Panel/Margin/VBox/Subtitle
-@onready var cards: GridContainer = $Center/Panel/Margin/VBox/Cards
-@onready var hint_label: Label = $Center/Panel/Margin/VBox/Hint
+@onready var root: Control = $Root
+@onready var panel: PanelContainer = $Root/Panel
+@onready var margin: MarginContainer = $Root/Panel/Margin
+@onready var vbox: VBoxContainer = $Root/Panel/Margin/VBox
+@onready var title_label: Label = $Root/Panel/Margin/VBox/Title
+@onready var subtitle_label: Label = $Root/Panel/Margin/VBox/Subtitle
+@onready var cards: GridContainer = $Root/Panel/Margin/VBox/Cards
+@onready var hint_label: Label = $Root/Panel/Margin/VBox/Hint
 
 var _choices: Array[Dictionary] = []
 
@@ -42,6 +42,8 @@ func show_choices(choices: Array[Dictionary]) -> void:
 		button.get_node("VBox/Title").text = str(choice.get("title", ""))
 		button.get_node("VBox/Desc").text = str(choice.get("desc", ""))
 		button.visible = i < choices.size()
+	# Re-apply after the panel has a real size from full-bleed anchors.
+	call_deferred("_apply_layout")
 	if cards.get_child_count() > 0:
 		(cards.get_child(0) as Button).grab_focus()
 
@@ -77,9 +79,7 @@ func _window_css_size() -> Vector2:
 	## On HiDPI web (iPhone), window_get_size() is device pixels. Divide by
 	## screen_get_scale() (devicePixelRatio) to get CSS / layout points.
 	var win := Vector2(DisplayServer.window_get_size())
-	var dpr := DisplayServer.screen_get_scale()
-	if dpr < 0.5:
-		dpr = 1.0
+	var dpr := maxf(DisplayServer.screen_get_scale(), 0.5)
 	return win / dpr
 
 
@@ -111,9 +111,37 @@ func _vp_font_for_css(css_px: float) -> int:
 	var vp := get_viewport().get_visible_rect().size
 	var css_short := mini(css.x, css.y)
 	var vp_short := mini(vp.x, vp.y)
+	var computed: int
 	if css_short <= 1.0 or vp_short <= 1.0:
-		return int(round(css_px * 2.0))
-	return int(ceili(css_px * vp_short / css_short))
+		computed = int(round(css_px * 2.5))
+	else:
+		computed = int(ceili(css_px * vp_short / css_short))
+	# Floor protects against DPR mis-reports that would leave type unreadably small.
+	return maxi(computed, int(ceili(css_px * 2.4)))
+
+
+func _set_panel_full_bleed(vp: Vector2) -> void:
+	## Anchor the panel to nearly the full viewport (not a tiny centered dialog).
+	var pad_x := maxf(8.0, vp.x * 0.015)
+	var pad_y := maxf(6.0, vp.y * 0.02)
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.offset_left = pad_x
+	panel.offset_top = pad_y
+	panel.offset_right = -pad_x
+	panel.offset_bottom = -pad_y
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+
+func _set_panel_desktop_dialog() -> void:
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -320.0
+	panel.offset_top = -180.0
+	panel.offset_right = 320.0
+	panel.offset_bottom = 180.0
+	# Let content define height; width stays comfortable on desktop.
+	panel.reset_size()
+	panel.custom_minimum_size = Vector2(640, 0)
 
 
 func _apply_layout() -> void:
@@ -123,26 +151,30 @@ func _apply_layout() -> void:
 	var mobile := _is_compact_mobile_ui()
 
 	if mobile:
-		# Nearly full-screen panel; type sized to real CSS points on the phone.
-		panel.custom_minimum_size = Vector2(vp.x * 0.98, vp.y * 0.96)
-		margin.add_theme_constant_override("margin_left", 12)
-		margin.add_theme_constant_override("margin_top", 8)
-		margin.add_theme_constant_override("margin_right", 12)
-		margin.add_theme_constant_override("margin_bottom", 8)
+		_set_panel_full_bleed(vp)
+		panel.custom_minimum_size = Vector2.ZERO
+		margin.add_theme_constant_override("margin_left", 14)
+		margin.add_theme_constant_override("margin_top", 10)
+		margin.add_theme_constant_override("margin_right", 14)
+		margin.add_theme_constant_override("margin_bottom", 10)
 		vbox.add_theme_constant_override("separation", 8)
 		cards.columns = 1
 		cards.add_theme_constant_override("h_separation", 10)
-		cards.add_theme_constant_override("v_separation", 10)
-		_set_label_style(title_label, _vp_font_for_css(CSS_TITLE), Color(0.95, 0.82, 0.4, 1), true)
-		_set_label_style(subtitle_label, _vp_font_for_css(CSS_SUBTITLE), Color(0.92, 0.88, 0.78, 1), true)
-		_set_label_style(hint_label, _vp_font_for_css(CSS_HINT), Color(0.85, 0.8, 0.62, 0.95), true)
+		cards.add_theme_constant_override("v_separation", 12)
+		var title_fs := _vp_font_for_css(CSS_TITLE)
+		var sub_fs := _vp_font_for_css(CSS_SUBTITLE)
+		var hint_fs := _vp_font_for_css(CSS_HINT)
+		_set_label_style(title_label, title_fs, Color(0.95, 0.82, 0.4, 1), true)
+		_set_label_style(subtitle_label, sub_fs, Color(0.92, 0.88, 0.78, 1), true)
+		_set_label_style(hint_label, hint_fs, Color(0.85, 0.8, 0.62, 0.95), true)
 		hint_label.text = "Tap a blessing to continue"
-		var header_budget := float(_vp_font_for_css(CSS_TITLE) + _vp_font_for_css(CSS_SUBTITLE) + _vp_font_for_css(CSS_HINT) + 40)
-		var card_h := maxf(150.0, (vp.y * 0.96 - header_budget) / 3.0)
+		var header_budget := float(title_fs + sub_fs + hint_fs + 48)
+		var usable_h := maxf(200.0, panel.size.y if panel.size.y > 1.0 else vp.y * 0.96)
+		var card_h := maxf(160.0, (usable_h - header_budget) / 3.0)
 		for button in cards.get_children():
 			_style_card(button as Button, true, card_h)
 	else:
-		panel.custom_minimum_size = Vector2.ZERO
+		_set_panel_desktop_dialog()
 		margin.add_theme_constant_override("margin_left", 18)
 		margin.add_theme_constant_override("margin_top", 16)
 		margin.add_theme_constant_override("margin_right", 18)
@@ -163,7 +195,7 @@ func _set_label_style(label: Label, font_size: int, color: Color, outline: bool)
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	if outline:
-		var outline_size := maxi(3, int(round(float(font_size) * 0.12)))
+		var outline_size := maxi(4, int(round(float(font_size) * 0.14)))
 		label.add_theme_constant_override("outline_size", outline_size)
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
 	else:
