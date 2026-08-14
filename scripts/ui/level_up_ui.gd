@@ -2,6 +2,13 @@ extends CanvasLayer
 
 signal choice_made(choice: Dictionary)
 
+## Target on-screen sizes in CSS pixels (points) for phone / touch web.
+const CSS_TITLE := 28.0
+const CSS_SUBTITLE := 18.0
+const CSS_CARD_TITLE := 22.0
+const CSS_CARD_DESC := 18.0
+const CSS_HINT := 16.0
+
 @onready var dim: ColorRect = $Dim
 @onready var center: CenterContainer = $Center
 @onready var panel: PanelContainer = $Center/Panel
@@ -66,25 +73,47 @@ func _pick(index: int) -> void:
 	choice_made.emit(_choices[index])
 
 
-func _is_compact_mobile_ui() -> bool:
-	## iPhone / small touch screens: window CSS pixels are far smaller than the
-	## 1280x720 game viewport, so fixed dialog sizes become hard to read.
+func _window_css_size() -> Vector2:
+	## On HiDPI web (iPhone), window_get_size() is device pixels. Divide by
+	## screen_get_scale() (devicePixelRatio) to get CSS / layout points.
 	var win := Vector2(DisplayServer.window_get_size())
-	var short_side := mini(win.x, win.y)
-	if short_side <= 0:
-		return OS.has_feature("mobile")
-	# Phone-class CSS short edge (iPhone landscape is typically ~320–430).
-	if short_side < 500:
+	var dpr := DisplayServer.screen_get_scale()
+	if dpr < 0.5:
+		dpr = 1.0
+	return win / dpr
+
+
+func _is_compact_mobile_ui() -> bool:
+	var css := _window_css_size()
+	var short_side := mini(css.x, css.y)
+	var touch := (
+		DisplayServer.is_touchscreen_available()
+		or OS.has_feature("mobile")
+	)
+	# Phone-class CSS short edge (iPhone landscape ~320–430 CSS px).
+	if short_side > 0.0 and short_side < 520.0:
 		return true
-	var touch := DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
-	# Larger phones / small tablets with touch still need bigger type.
-	if touch and short_side < 600:
+	# Touch tablets / large phones in CSS points.
+	if touch and short_side > 0.0 and short_side < 720.0:
 		return true
-	# Canvas stretched down onto a small window (common for mobile web).
-	var vp := get_viewport().get_visible_rect().size
-	if vp.y > 0.0 and win.y > 0.0 and (win.y / vp.y) < 0.72:
+	# GitHub Pages / mobile Safari: always use the readable layout on touch web.
+	if OS.has_feature("web") and touch:
+		return true
+	if OS.has_feature("mobile"):
 		return true
 	return false
+
+
+func _vp_font_for_css(css_px: float) -> int:
+	## Convert a desired on-screen CSS pixel size into a viewport font size.
+	## Visual CSS size ≈ font_vp * (css_short / vp_short).
+	var css := _window_css_size()
+	var vp := get_viewport().get_visible_rect().size
+	var css_short := mini(css.x, css.y)
+	var vp_short := mini(vp.x, vp.y)
+	if css_short <= 1.0 or vp_short <= 1.0:
+		return int(round(css_px * 2.0))
+	return int(ceili(css_px * vp_short / css_short))
 
 
 func _apply_layout() -> void:
@@ -94,25 +123,22 @@ func _apply_layout() -> void:
 	var mobile := _is_compact_mobile_ui()
 
 	if mobile:
-		# Nearly full-screen panel so cards use the phone display.
-		# Fonts are oversized in viewport space because iPhone canvas scale is ~0.5x.
-		# Stack cards vertically so each blessing gets full width and readable type.
+		# Nearly full-screen panel; type sized to real CSS points on the phone.
 		panel.custom_minimum_size = Vector2(vp.x * 0.98, vp.y * 0.96)
-		margin.add_theme_constant_override("margin_left", 14)
+		margin.add_theme_constant_override("margin_left", 12)
 		margin.add_theme_constant_override("margin_top", 8)
-		margin.add_theme_constant_override("margin_right", 14)
+		margin.add_theme_constant_override("margin_right", 12)
 		margin.add_theme_constant_override("margin_bottom", 8)
 		vbox.add_theme_constant_override("separation", 8)
 		cards.columns = 1
 		cards.add_theme_constant_override("h_separation", 10)
 		cards.add_theme_constant_override("v_separation", 10)
-		_set_label_style(title_label, 48, Color(0.95, 0.82, 0.4, 1), true)
-		_set_label_style(subtitle_label, 28, Color(0.92, 0.88, 0.78, 1), true)
-		_set_label_style(hint_label, 24, Color(0.85, 0.8, 0.62, 0.95), true)
+		_set_label_style(title_label, _vp_font_for_css(CSS_TITLE), Color(0.95, 0.82, 0.4, 1), true)
+		_set_label_style(subtitle_label, _vp_font_for_css(CSS_SUBTITLE), Color(0.92, 0.88, 0.78, 1), true)
+		_set_label_style(hint_label, _vp_font_for_css(CSS_HINT), Color(0.85, 0.8, 0.62, 0.95), true)
 		hint_label.text = "Tap a blessing to continue"
-		# Share remaining panel height across the three stacked cards.
-		var header_budget := 130.0
-		var card_h := maxf(170.0, (vp.y * 0.96 - header_budget) / 3.0)
+		var header_budget := float(_vp_font_for_css(CSS_TITLE) + _vp_font_for_css(CSS_SUBTITLE) + _vp_font_for_css(CSS_HINT) + 40)
+		var card_h := maxf(150.0, (vp.y * 0.96 - header_budget) / 3.0)
 		for button in cards.get_children():
 			_style_card(button as Button, true, card_h)
 	else:
@@ -137,7 +163,8 @@ func _set_label_style(label: Label, font_size: int, color: Color, outline: bool)
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	if outline:
-		label.add_theme_constant_override("outline_size", 5)
+		var outline_size := maxi(3, int(round(float(font_size) * 0.12)))
+		label.add_theme_constant_override("outline_size", outline_size)
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
 	else:
 		label.add_theme_constant_override("outline_size", 0)
@@ -158,10 +185,10 @@ func _style_card(button: Button, mobile: bool, card_height: float) -> void:
 		return
 	card_vbox.add_theme_constant_override("separation", 6 if mobile else 8)
 	if mobile:
-		card_vbox.offset_left = 20.0
-		card_vbox.offset_top = 14.0
-		card_vbox.offset_right = -20.0
-		card_vbox.offset_bottom = -14.0
+		card_vbox.offset_left = 18.0
+		card_vbox.offset_top = 12.0
+		card_vbox.offset_right = -18.0
+		card_vbox.offset_bottom = -12.0
 		card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	else:
 		card_vbox.offset_left = 10.0
@@ -175,7 +202,7 @@ func _style_card(button: Button, mobile: bool, card_height: float) -> void:
 	if card_title:
 		_set_label_style(
 			card_title,
-			38 if mobile else 18,
+			_vp_font_for_css(CSS_CARD_TITLE) if mobile else 18,
 			Color(0.98, 0.9, 0.55, 1),
 			mobile
 		)
@@ -185,7 +212,7 @@ func _style_card(button: Button, mobile: bool, card_height: float) -> void:
 	if card_desc:
 		_set_label_style(
 			card_desc,
-			32 if mobile else 13,
+			_vp_font_for_css(CSS_CARD_DESC) if mobile else 13,
 			Color(0.95, 0.92, 0.85, 1) if mobile else Color(1, 1, 1, 1),
 			mobile
 		)
