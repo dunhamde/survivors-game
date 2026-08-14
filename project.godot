@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/name="Survivors Game"
-config/description="A survivors-style action game"
-run/main_scene="res://scenes/main.tscn"
+config/name="Elwynn Survivors"
+config/description="A Warcraft-themed survivors game. Vertical slice: Paladin in Elwynn Forest."
+run/main_scene="res://scenes/elwynn_run.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -47,8 +47,11 @@ move_down={
 2d_physics/layer_1="player"
 2d_physics/layer_2="enemy"
 2d_physics/layer_3="projectile"
+2d_physics/layer_4="pickup"
 
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
-environment/defaults/default_clear_color=Color(0.08, 0.09, 0.12, 1)
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
+environment/defaults/default_clear_color=Color(0.12, 0.18, 0.1, 1)

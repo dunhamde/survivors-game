@@ -1,0 +1,420 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://scripts/run/run_controller.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/run/elwynn_map.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/run/wave_director.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/hogger.tscn" id="6"]
+[ext_resource type="Resource" path="res://data/enemies/gnoll.tres" id="7"]
+[ext_resource type="Resource" path="res://data/enemies/kobold.tres" id="8"]
+[ext_resource type="Resource" path="res://data/enemies/murloc.tres" id="9"]
+[ext_resource type="Resource" path="res://data/enemies/hogger.tres" id="10"]
+[ext_resource type="Texture2D" path="res://assets/tiles/elwynn/goldshire_silhouette.png" id="11"]
+[ext_resource type="Script" path="res://scripts/ui/level_up_ui.gd" id="12"]
+
+[sub_resource type="StyleBoxFlat" id="PanelGold"]
+bg_color = Color(0.12, 0.08, 0.04, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.83, 0.65, 0.22, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="HpBg"]
+bg_color = Color(0.18, 0.1, 0.08, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.32, 0.12, 1)
+
+[sub_resource type="StyleBoxFlat" id="HpFill"]
+bg_color = Color(0.62, 0.14, 0.12, 1)
+
+[sub_resource type="StyleBoxFlat" id="XpFill"]
+bg_color = Color(0.83, 0.65, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="BossFill"]
+bg_color = Color(0.72, 0.22, 0.08, 1)
+
+[sub_resource type="StyleBoxFlat" id="Card"]
+bg_color = Color(0.18, 0.12, 0.07, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.83, 0.65, 0.22, 1)
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="CardHover"]
+bg_color = Color(0.28, 0.2, 0.1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.82, 0.35, 1)
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+
+[node name="ElwynnRun" type="Node2D" groups=["run"]]
+script = ExtResource("1")
+
+[node name="Parallax2D" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.22, 0.08)
+repeat_size = Vector2(256, 0)
+repeat_times = 6
+
+[node name="Goldshire" type="Sprite2D" parent="Parallax2D"]
+position = Vector2(0, -210)
+texture = ExtResource("11")
+
+[node name="World" type="Node2D" parent="." groups=["entities"]]
+y_sort_enabled = true
+script = ExtResource("2")
+
+[node name="Ground" type="TileMapLayer" parent="World"]
+z_index = -20
+y_sort_enabled = false
+
+[node name="Player" parent="World" instance=ExtResource("3")]
+
+[node name="WaveDirector" type="Node2D" parent="."]
+script = ExtResource("4")
+enemy_scene = ExtResource("5")
+hogger_scene = ExtResource("6")
+gnoll_data = ExtResource("7")
+kobold_data = ExtResource("8")
+murloc_data = ExtResource("9")
+hogger_data = ExtResource("10")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Top" type="MarginContainer" parent="HUD"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 110.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+
+[node name="Row" type="HBoxContainer" parent="HUD/Top"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Left" type="VBoxContainer" parent="HUD/Top/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="LevelLabel" type="Label" parent="HUD/Top/Row/Left"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+text = "Paladin  Lv 1"
+
+[node name="HealthBar" type="ProgressBar" parent="HUD/Top/Row/Left"]
+custom_minimum_size = Vector2(240, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("HpBg")
+theme_override_styles/fill = SubResource("HpFill")
+max_value = 120.0
+value = 120.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="HUD/Top/Row/Left"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "HP 120 / 120"
+
+[node name="XPBar" type="ProgressBar" parent="HUD/Top/Row/Left"]
+custom_minimum_size = Vector2(240, 10)
+layout_mode = 2
+theme_override_styles/background = SubResource("HpBg")
+theme_override_styles/fill = SubResource("XpFill")
+max_value = 8.0
+show_percentage = false
+
+[node name="TimeLabel" type="Label" parent="HUD/Top/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(0.95, 0.9, 0.7, 1)
+theme_override_font_sizes/font_size = 28
+text = "00:00"
+horizontal_alignment = 1
+
+[node name="Right" type="VBoxContainer" parent="HUD/Top/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="KillsLabel" type="Label" parent="HUD/Top/Row/Right"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.82, 0.6, 1)
+theme_override_font_sizes/font_size = 18
+text = "Kills 0"
+horizontal_alignment = 2
+
+[node name="Hint" type="Label" parent="HUD"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -36.0
+offset_right = 220.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.85, 0.8, 0.65, 0.75)
+theme_override_font_sizes/font_size = 14
+text = "WASD / Arrows to move · Auto-attack · Survive until Hogger"
+horizontal_alignment = 1
+
+[node name="BossWrap" type="VBoxContainer" parent="HUD"]
+visible = false
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 280.0
+offset_top = 64.0
+offset_right = -280.0
+offset_bottom = 108.0
+theme_override_constants/separation = 2
+
+[node name="BossLabel" type="Label" parent="HUD/BossWrap"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.35, 1)
+theme_override_font_sizes/font_size = 16
+text = "Hogger"
+horizontal_alignment = 1
+
+[node name="BossBar" type="ProgressBar" parent="HUD/BossWrap"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+theme_override_styles/background = SubResource("HpBg")
+theme_override_styles/fill = SubResource("BossFill")
+max_value = 1600.0
+value = 1600.0
+show_percentage = false
+
+[node name="EndPanel" type="PanelContainer" parent="HUD"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -110.0
+offset_right = 220.0
+offset_bottom = 110.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("PanelGold")
+
+[node name="Margin" type="MarginContainer" parent="HUD/EndPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="HUD/EndPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="HUD/EndPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+text = "You Died"
+horizontal_alignment = 1
+
+[node name="Stats" type="Label" parent="HUD/EndPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Press Enter to retry"
+horizontal_alignment = 1
+
+[node name="LevelUpUI" type="CanvasLayer" parent="."]
+process_mode = 3
+layer = 20
+visible = false
+script = ExtResource("12")
+
+[node name="Dim" type="ColorRect" parent="LevelUpUI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.5)
+
+[node name="Center" type="CenterContainer" parent="LevelUpUI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="LevelUpUI/Center"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("PanelGold")
+
+[node name="Margin" type="MarginContainer" parent="LevelUpUI/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 26
+text = "Level Up"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Choose a blessing"
+horizontal_alignment = 1
+
+[node name="Cards" type="HBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Card1" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
+custom_minimum_size = Vector2(190, 150)
+layout_mode = 2
+theme_override_styles/normal = SubResource("Card")
+theme_override_styles/hover = SubResource("CardHover")
+theme_override_styles/pressed = SubResource("CardHover")
+theme_override_styles/focus = SubResource("CardHover")
+
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card1/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+text = "Holy Strike"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card1/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "A blessed swing"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Card2" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
+custom_minimum_size = Vector2(190, 150)
+layout_mode = 2
+theme_override_styles/normal = SubResource("Card")
+theme_override_styles/hover = SubResource("CardHover")
+theme_override_styles/pressed = SubResource("CardHover")
+theme_override_styles/focus = SubResource("CardHover")
+
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card2/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+text = "Consecration"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card2/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Holy fire"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Card3" type="Button" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards"]
+custom_minimum_size = Vector2(190, 150)
+layout_mode = 2
+theme_override_styles/normal = SubResource("Card")
+theme_override_styles/hover = SubResource("CardHover")
+theme_override_styles/pressed = SubResource("CardHover")
+theme_override_styles/focus = SubResource("CardHover")
+
+[node name="VBox" type="VBoxContainer" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card3/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.86, 0.5, 1)
+theme_override_font_sizes/font_size = 18
+text = "Hammer of Wrath"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Desc" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox/Cards/Card3/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Homing hammer"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="LevelUpUI/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Click a card or press 1 / 2 / 3"
+horizontal_alignment = 1

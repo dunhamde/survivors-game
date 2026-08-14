@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/gnoll.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"gnoll"
+display_name = "Gnoll"
+texture = ExtResource("2")
+max_health = 36
+move_speed = 58.0
+xp_value = 2
+contact_damage = 8
+collision_radius = 11.0
