@@ -1,8 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
 [ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
+[ext_resource type="Script" path="res://scripts/virtual_joystick.gd" id="4_joystick"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -56,9 +57,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -180.0
+offset_left = -200.0
 offset_top = -40.0
-offset_right = 180.0
+offset_right = 200.0
 offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -66,6 +67,17 @@ theme_override_colors/font_color = Color(0.75, 0.78, 0.85, 0.8)
 theme_override_font_sizes/font_size = 14
 text = "WASD / Arrows to move · Auto-attack"
 horizontal_alignment = 1
+
+[node name="VirtualJoystick" type="Control" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = -24.0
+grow_vertical = 0
+script = ExtResource("4_joystick")
 
 [node name="GameOver" type="PanelContainer" parent="HUD"]
 visible = false
@@ -75,9 +87,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -180.0
-offset_top = -90.0
+offset_top = -110.0
 offset_right = 180.0
-offset_bottom = 90.0
+offset_bottom = 110.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -104,5 +116,11 @@ theme_override_font_sizes/font_size = 16
 text = "Survived 00:00
 Kills 0
 
-Press Enter to retry"
+Press Enter or Retry"
 horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="HUD/GameOver/Margin/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Retry"
