@@ -68,7 +68,7 @@ func _is_touch_ui() -> bool:
 
 func _update_hint() -> void:
 	if _is_touch_ui():
-		hint_label.text = "Drag the stick to move · Auto-attack · Survive until Hogger"
+		hint_label.text = "Touch & drag to move · Auto-attack · Survive until Hogger"
 	else:
 		hint_label.text = "WASD / Arrows to move · Auto-attack · Survive until Hogger"
 	if virtual_joystick != null and virtual_joystick.has_method("_update_visibility"):
