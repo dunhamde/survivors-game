@@ -18,6 +18,20 @@ func _init() -> void:
 	quit()
 
 
+func _run_elwynn_tile_tool() -> bool:
+	# Prefer the Python atlas generator for the 32px summer set.
+	var abs_script := ProjectSettings.globalize_path("res://tools/gen_elwynn_tiles.py")
+	var output: Array = []
+	var code := OS.execute("python3", [abs_script], output, true)
+	if code != 0:
+		for line in output:
+			push_warning(str(line))
+		return false
+	for line in output:
+		print(line)
+	return true
+
+
 func _save(img: Image, path: String) -> void:
 	var err := img.save_png(path)
 	if err != OK:
@@ -104,40 +118,35 @@ const LEAF_D := Color("1e4a1a")
 
 
 func _gen_tiles() -> void:
-	var img := Image.create(96, 16, false, Image.FORMAT_RGBA8)
+	if _run_elwynn_tile_tool():
+		return
+	push_warning("Falling back to minimal 32px grass/dirt atlas (Python tool failed).")
+	var img := Image.create(384, 192, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
-	# 0 grass dark
-	_fill_tile(img, 0, GRASS_C, GRASS_A, Color("254818"), false)
-	# 1 grass mid
-	_fill_tile(img, 1, GRASS_A, GRASS_B, GRASS_C, false)
-	# 2 grass light
-	_fill_tile(img, 2, GRASS_B, GRASS_D, GRASS_A, false)
-	# 3 flowers
-	_fill_tile(img, 3, GRASS_A, GRASS_B, GRASS_C, true)
-	# 4 dirt
-	_fill_tile(img, 4, DIRT, DIRT_D, DIRT_L, false)
-	# 5 dirt pale
-	_fill_tile(img, 5, DIRT_L, DIRT, DIRT_D, false)
+	for i in 6:
+		_fill_tile32(img, i, 0, GRASS_A if i != 0 else GRASS_C, GRASS_B, GRASS_C, i == 3)
+	for i in 4:
+		_fill_tile32(img, i, 1, DIRT if i != 1 else DIRT_L, DIRT_D, DIRT_L, false)
 	_save(img, "res://assets/tiles/elwynn/elwynn_tiles.png")
 
 
-func _fill_tile(img: Image, index: int, a: Color, b: Color, c: Color, flowers: bool) -> void:
-	var ox := index * 16
-	for y in 16:
-		for x in 16:
-			var n := (x * 13 + y * 7 + index * 17) % 7
+func _fill_tile32(img: Image, tx: int, ty: int, a: Color, b: Color, c: Color, flowers: bool) -> void:
+	var ox := tx * 32
+	var oy := ty * 32
+	for y in 32:
+		for x in 32:
+			var n := (x * 13 + y * 7 + tx * 17 + ty * 9) % 7
 			var col := a
 			if n == 0 or n == 1:
 				col = b
 			elif n == 2:
 				col = c
-			_px(img, ox + x, y, col)
+			_px(img, ox + x, oy + y, col)
 	if flowers:
-		_px(img, ox + 4, 5, FLOWER)
-		_px(img, ox + 5, 5, WHITE)
-		_px(img, ox + 11, 10, Color("d070a0"))
-		_px(img, ox + 12, 10, WHITE)
-		_px(img, ox + 7, 13, FLOWER)
+		_px(img, ox + 8, oy + 10, FLOWER)
+		_px(img, ox + 9, oy + 10, WHITE)
+		_px(img, ox + 22, oy + 18, Color("d070a0"))
+		_px(img, ox + 23, oy + 18, WHITE)
 
 
 func _gen_paladin() -> void:
@@ -331,9 +340,13 @@ func _gen_fx() -> void:
 
 
 func _gen_props() -> void:
-	_gen_tree("res://assets/tiles/elwynn/tree_oak_a.png", 48, 64, 0)
-	_gen_tree("res://assets/tiles/elwynn/tree_oak_b.png", 48, 64, 1)
-	_gen_tree("res://assets/tiles/elwynn/tree_oak_c.png", 32, 48, 2)
+	# Trees / lantern / Goldshire are produced by tools/gen_elwynn_tiles.py via _gen_tiles().
+	# Keep a GDScript fallback if that tool was unavailable.
+	if FileAccess.file_exists("res://assets/tiles/elwynn/tree_oak_a.png"):
+		return
+	_gen_tree("res://assets/tiles/elwynn/tree_oak_a.png", 64, 80, 0)
+	_gen_tree("res://assets/tiles/elwynn/tree_oak_b.png", 72, 88, 1)
+	_gen_tree("res://assets/tiles/elwynn/tree_oak_c.png", 56, 72, 2)
 	_gen_lantern()
 	_gen_goldshire()
 
