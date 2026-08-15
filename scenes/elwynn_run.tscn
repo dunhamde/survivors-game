@@ -84,11 +84,11 @@ script = ExtResource("1")
 
 [node name="Parallax2D" type="Parallax2D" parent="."]
 scroll_scale = Vector2(0.22, 0.08)
-repeat_size = Vector2(256, 0)
+repeat_size = Vector2(320, 0)
 repeat_times = 6
 
 [node name="Goldshire" type="Sprite2D" parent="Parallax2D"]
-position = Vector2(0, -210)
+position = Vector2(0, -260)
 texture = ExtResource("11")
 
 [node name="World" type="Node2D" parent="." groups=["entities"]]
