@@ -8,6 +8,8 @@ const CSS_SUBTITLE := 20.0
 const CSS_CARD_TITLE := 26.0
 const CSS_CARD_DESC := 20.0
 const CSS_HINT := 17.0
+## Centered mobile dialog size as a fraction of the viewport.
+const MOBILE_PANEL_FRACTION := 0.75
 
 @onready var dim: ColorRect = $Dim
 @onready var root: MarginContainer = $Root
@@ -123,11 +125,15 @@ func _apply_layout() -> void:
 	var mobile := _is_compact_mobile_ui()
 
 	if mobile:
-		var pad := maxi(4, int(round(mini(vp.x, vp.y) * 0.01)))
-		root.add_theme_constant_override("margin_left", pad)
-		root.add_theme_constant_override("margin_top", pad)
-		root.add_theme_constant_override("margin_right", pad)
-		root.add_theme_constant_override("margin_bottom", pad)
+		# Centered ~75% dialog — readable, but not edge-to-edge.
+		var mx := int(round(vp.x * (1.0 - MOBILE_PANEL_FRACTION) * 0.5))
+		var my := int(round(vp.y * (1.0 - MOBILE_PANEL_FRACTION) * 0.5))
+		mx = maxi(mx, 8)
+		my = maxi(my, 6)
+		root.add_theme_constant_override("margin_left", mx)
+		root.add_theme_constant_override("margin_top", my)
+		root.add_theme_constant_override("margin_right", mx)
+		root.add_theme_constant_override("margin_bottom", my)
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		panel.custom_minimum_size = Vector2.ZERO
@@ -147,10 +153,9 @@ func _apply_layout() -> void:
 		_set_label_style(hint_label, hint_fs, Color(0.85, 0.8, 0.62, 0.95), true)
 		hint_label.text = "Tap a blessing to continue"
 		var header_budget := float(title_fs + sub_fs + hint_fs + 40)
-		var usable_h := maxf(240.0, vp.y - float(pad * 2))
-		var from_space := (usable_h - header_budget) / 3.0
-		var from_text := float(card_title_fs + card_desc_fs + 40)
-		var card_h := maxf(from_space, from_text)
+		var usable_h := maxf(200.0, vp.y - float(my * 2))
+		# Fit cards into the 75% panel; don't force taller than available space.
+		var card_h := maxf(0.0, (usable_h - header_budget) / 3.0)
 		for button in cards.get_children():
 			_style_card(button as Button, true, card_h, card_title_fs, card_desc_fs)
 	else:
