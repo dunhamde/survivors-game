@@ -80,12 +80,12 @@ func _generate_types() -> void:
 				if _types.has(p2):
 					_types[p2] = T_DIRT
 
-	# Water ponds.
+	# Water ponds (one near spawn so the shore set is visible in play).
 	var ponds := [
-		Vector2i(-22, -18), Vector2i(28, 16), Vector2i(-30, 24), Vector2i(18, -28),
+		Vector2i(-10, 8), Vector2i(14, -9), Vector2i(-28, 22), Vector2i(26, 18),
 	]
 	for center in ponds:
-		var radius := 4 + _hash(center.x, center.y, 9) % 3
+		var radius := 3 + _hash(center.x, center.y, 9) % 3
 		for y in range(center.y - radius - 1, center.y + radius + 2):
 			for x in range(center.x - radius - 1, center.x + radius + 2):
 				var p := Vector2i(x, y)
@@ -103,19 +103,19 @@ func _generate_types() -> void:
 			var p := Vector2i(x, y)
 			if _types[p] != T_GRASS:
 				continue
-			if Vector2(x, y).length() < 8.0:
+			if Vector2(x, y).length() < 6.0:
 				continue
 			var road_y := int(round(4.0 * sin(x * 0.055)))
-			if abs(y - road_y) <= 3:
+			if abs(y - road_y) <= 2:
 				continue
 			var n := _noise_forest(x, y)
-			if n > 0.58:
+			if n > 0.54:
 				_types[p] = T_FOREST
 
 	# Rock outcrops.
 	var rocks := [
-		Vector2i(-12, 14), Vector2i(20, -10), Vector2i(-26, -6), Vector2i(8, 22),
-		Vector2i(32, 4), Vector2i(-8, -24),
+		Vector2i(-7, 5), Vector2i(9, -6), Vector2i(-18, -8), Vector2i(8, 14),
+		Vector2i(22, 4), Vector2i(-12, -16),
 	]
 	for center in rocks:
 		for y in range(center.y - 1, center.y + 2):

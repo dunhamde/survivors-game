@@ -150,21 +150,28 @@ def dirt_tile(variant: int) -> Image.Image:
     return img
 
 
+def fringe_depth(along: int, seed: int) -> int:
+    """Organic RTS-style fringe depth along an edge (pixels into the tile)."""
+    wave = int(3.5 * math.sin(along * 0.55 + seed * 0.2))
+    bump = (hash2(along, seed, 7) % 7) - 2
+    return max(8, min(18, 12 + wave + bump))
+
+
 def jagged_mask(side: str, x: int, y: int, seed: int) -> bool:
     """True where grass fringe should appear on a dirt/water transition tile."""
-    noise = (hash2(x, y, seed) % 5) - 2
+    speck = hash2(x, y, seed) % 11 == 0
     if side == "N":
-        depth = 6 + (hash2(x, 0, seed) % 5) + noise
-        return y < depth
+        depth = fringe_depth(x, seed)
+        return y < depth or (y == depth and speck)
     if side == "S":
-        depth = 6 + (hash2(x, 1, seed) % 5) + noise
-        return y >= TILE - depth
+        depth = fringe_depth(x, seed + 11)
+        return y >= TILE - depth or (y == TILE - depth - 1 and speck)
     if side == "W":
-        depth = 6 + (hash2(y, 2, seed) % 5) + noise
-        return x < depth
+        depth = fringe_depth(y, seed + 23)
+        return x < depth or (x == depth and speck)
     if side == "E":
-        depth = 6 + (hash2(y, 3, seed) % 5) + noise
-        return x >= TILE - depth
+        depth = fringe_depth(y, seed + 37)
+        return x >= TILE - depth or (x == TILE - depth - 1 and speck)
     return False
 
 
@@ -173,26 +180,29 @@ def blend_grass_on_dirt(sides: str, seed: int = 0) -> Image.Image:
     g = grass_tile(1)
     for y in range(TILE):
         for x in range(TILE):
-            on = False
-            for s in sides:
-                if jagged_mask(s, x, y, seed + ord(s)):
-                    on = True
-                    break
-            # Outer corner: require near both edges for cleaner NE/NW/etc.
             if len(sides) == 2 and sides in ("NE", "NW", "SE", "SW"):
                 a, b = sides[0], sides[1]
                 on = jagged_mask(a, x, y, seed + 1) and jagged_mask(b, x, y, seed + 2)
-                # Soften with OR near the corner tip.
+                # Grow the outer corner lobe so roads don't look square.
                 if sides == "NE":
-                    on = on or (x > 22 and y < 10)
+                    on = on or (x > 14 and y < 18 and (x + (TILE - y)) > 28)
                 elif sides == "NW":
-                    on = on or (x < 10 and y < 10)
+                    on = on or (x < 18 and y < 18 and ((TILE - x) + (TILE - y)) > 28)
                 elif sides == "SE":
-                    on = on or (x > 22 and y > 22)
+                    on = on or (x > 14 and y > 14 and (x + y) > 28)
                 elif sides == "SW":
-                    on = on or (x < 10 and y > 22)
+                    on = on or (x < 18 and y > 14 and ((TILE - x) + y) > 28)
+            elif sides == "NS":
+                on = jagged_mask("N", x, y, seed) or jagged_mask("S", x, y, seed)
+            elif sides == "EW":
+                on = jagged_mask("E", x, y, seed) or jagged_mask("W", x, y, seed)
+            else:
+                on = any(jagged_mask(s, x, y, seed + ord(s)) for s in sides)
             if on:
                 put(img, x, y, g.getpixel((x, y))[:3])
+                # Dark dirt flecks along the seam for WC2-like toothiness.
+                if hash2(x, y, seed + 99) % 13 == 0:
+                    put(img, x, y, D["dark"])
     return img
 
 
@@ -218,27 +228,18 @@ def shore_tile(sides: str, seed: int = 0) -> Image.Image:
     bank = dirt_tile(0)
     for y in range(TILE):
         for x in range(TILE):
-            on = False
-            for s in sides:
-                if jagged_mask(s, x, y, seed + 50 + ord(s)):
-                    on = True
-            if len(sides) == 2:
+            if len(sides) == 2 and sides in ("NE", "NW", "SE", "SW"):
                 a, b = sides[0], sides[1]
                 on = jagged_mask(a, x, y, seed + 51) and jagged_mask(b, x, y, seed + 52)
+            else:
+                on = any(jagged_mask(s, x, y, seed + 50 + ord(s)) for s in sides)
             if on:
-                # Muddy bank rim then dirt.
-                rim = False
-                for s in sides:
-                    # one pixel inside water side of fringe
-                    if s == "N" and y == 6 + (hash2(x, 0, seed) % 4):
-                        rim = True
-                    if s == "S" and y == TILE - (6 + (hash2(x, 1, seed) % 4)):
-                        rim = True
-                    if s == "W" and x == 6 + (hash2(y, 2, seed) % 4):
-                        rim = True
-                    if s == "E" and x == TILE - (6 + (hash2(y, 3, seed) % 4)):
-                        rim = True
-                put(img, x, y, W["foam"] if rim else bank.getpixel((x, y))[:3])
+                put(img, x, y, bank.getpixel((x, y))[:3])
+                # Foam lip one pixel toward water.
+                if hash2(x, y, seed + 70) % 5 == 0:
+                    put(img, x, y, W["foam"])
+                elif hash2(x, y, seed + 71) % 9 == 0:
+                    put(img, x, y, W["bank"])
     return img
 
 
@@ -265,33 +266,52 @@ def draw_pine(img: Image.Image, cx: int, cy: int, scale: int, seed: int) -> None
 
 
 def forest_tile(variant: int) -> Image.Image:
-    img = grass_tile(0 if variant < 4 else 1)
+    # Dark undergrowth base so canopy patches read as woods, not speckled grass.
+    img = new_tile(F["dark"])
+    for y in range(TILE):
+        for x in range(TILE):
+            h = hash2(x, y, 80 + variant)
+            if h % 4 == 0:
+                put(img, x, y, G["shadow"])
+            elif h % 7 == 0:
+                put(img, x, y, F["canopy"])
+    if variant >= 4:
+        # Edge variants keep a grass lip on the open side.
+        g = grass_tile(0)
+        open_side = {4: "S", 5: "W", 6: "N", 7: "E"}[variant]
+        for y in range(TILE):
+            for x in range(TILE):
+                if jagged_mask(open_side, x, y, 90 + variant):
+                    put(img, x, y, g.getpixel((x, y))[:3])
     if variant == 0:  # dense
-        draw_pine(img, 10, 12, 7, 1)
-        draw_pine(img, 22, 14, 8, 2)
-        draw_pine(img, 16, 22, 6, 3)
-        draw_pine(img, 8, 24, 5, 4)
+        draw_pine(img, 10, 12, 8, 1)
+        draw_pine(img, 22, 14, 9, 2)
+        draw_pine(img, 16, 22, 7, 3)
+        draw_pine(img, 8, 24, 6, 4)
+        draw_pine(img, 24, 8, 5, 19)
     elif variant == 1:
-        draw_pine(img, 12, 14, 9, 5)
-        draw_pine(img, 23, 20, 7, 6)
+        draw_pine(img, 12, 14, 10, 5)
+        draw_pine(img, 23, 20, 8, 6)
+        draw_pine(img, 8, 22, 6, 20)
     elif variant == 2:
-        draw_pine(img, 18, 12, 8, 7)
-        draw_pine(img, 9, 20, 7, 8)
-        draw_pine(img, 24, 24, 5, 9)
+        draw_pine(img, 18, 12, 9, 7)
+        draw_pine(img, 9, 20, 8, 8)
+        draw_pine(img, 24, 24, 6, 9)
     elif variant == 3:  # sparse
-        draw_pine(img, 16, 16, 8, 10)
-    elif variant == 4:  # edge N (open south)
-        draw_pine(img, 10, 8, 6, 11)
-        draw_pine(img, 22, 10, 7, 12)
-    elif variant == 5:  # edge E
-        draw_pine(img, 22, 12, 7, 13)
-        draw_pine(img, 24, 22, 6, 14)
-    elif variant == 6:  # edge S
-        draw_pine(img, 12, 22, 7, 15)
-        draw_pine(img, 22, 24, 6, 16)
-    else:  # edge W
-        draw_pine(img, 8, 12, 7, 17)
-        draw_pine(img, 10, 22, 6, 18)
+        draw_pine(img, 16, 16, 9, 10)
+        draw_pine(img, 8, 10, 5, 21)
+    elif variant == 4:  # edge open south
+        draw_pine(img, 10, 8, 7, 11)
+        draw_pine(img, 22, 10, 8, 12)
+    elif variant == 5:  # edge open west
+        draw_pine(img, 22, 12, 8, 13)
+        draw_pine(img, 24, 22, 7, 14)
+    elif variant == 6:  # edge open north
+        draw_pine(img, 12, 22, 8, 15)
+        draw_pine(img, 22, 24, 7, 16)
+    else:  # edge open east
+        draw_pine(img, 8, 12, 8, 17)
+        draw_pine(img, 10, 22, 7, 18)
     return img
 
 
