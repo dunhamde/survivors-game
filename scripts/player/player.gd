@@ -160,7 +160,7 @@ func _show_frame(row: int, col: int, flip: bool) -> void:
 
 
 func take_damage(amount: int) -> void:
-	if not alive or _invuln_remaining > 0.0:
+	if not alive or _invuln_remaining > 0.0 or DevCheats.god_mode:
 		return
 	health = maxi(0, health - amount)
 	health_changed.emit(health, max_health)

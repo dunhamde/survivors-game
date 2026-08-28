@@ -315,7 +315,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Panel" type="PanelContainer" parent="PauseMenu/Center"]
-custom_minimum_size = Vector2(360, 0)
+custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("PanelGold")
 
@@ -349,6 +349,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Retry"
 
+[node name="DevButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Dev"
+
 [node name="QuitButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
@@ -361,6 +367,46 @@ theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
 theme_override_font_sizes/font_size = 12
 text = "Press Escape to resume"
 horizontal_alignment = 1
+
+[node name="DevBox" type="VBoxContainer" parent="PauseMenu/Center/Panel/Margin"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+text = "Dev"
+horizontal_alignment = 1
+
+[node name="GodMode" type="CheckBox" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "God Mode"
+
+[node name="GodHint" type="Label" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Invincible · attacks one-shot"
+horizontal_alignment = 1
+
+[node name="SpawnLabel" type="Label" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 16
+text = "Spawn enemy"
+
+[node name="SpawnList" type="VBoxContainer" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BackButton" type="Button" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Back"
 
 [node name="LevelUpUI" type="CanvasLayer" parent="."]
 process_mode = 3

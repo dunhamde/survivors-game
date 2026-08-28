@@ -46,6 +46,8 @@ func _ready() -> void:
 	pause_menu.toggle_requested.connect(_on_pause_toggle)
 	pause_menu.retry_pressed.connect(_restart)
 	pause_menu.quit_pressed.connect(_quit_game)
+	pause_menu.spawn_enemy_requested.connect(_on_dev_spawn)
+	pause_menu.setup_spawn_options(director.spawnable_catalog())
 	hamburger_button.pressed.connect(_on_pause_toggle)
 	_on_health_changed(player.health, player.max_health)
 	_on_xp_changed(player.xp, player.xp_to_next, player.level)
@@ -179,6 +181,11 @@ func _on_player_died() -> void:
 	if _won:
 		return
 	_end_run("You Died", "The Horde overruns the Goldshire road.")
+
+
+func _on_dev_spawn(id: StringName) -> void:
+	if director != null and director.has_method("spawn_debug"):
+		director.spawn_debug(id)
 
 
 func _on_pause_toggle() -> void:

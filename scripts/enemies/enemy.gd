@@ -194,6 +194,8 @@ func _update_flash(delta: float) -> void:
 func take_damage(amount: int) -> void:
 	if health <= 0:
 		return
+	if DevCheats.god_mode:
+		amount = health
 	health = maxi(0, health - amount)
 	_flash = 0.08
 	damaged.emit(health, max_health)

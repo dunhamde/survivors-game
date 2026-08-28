@@ -88,6 +88,52 @@ func _ogre_interval() -> float:
 	return 2.6
 
 
+func spawnable_catalog() -> Array[Dictionary]:
+	var items: Array[Dictionary] = []
+	for raw in [skeleton_data, grunt_data, ogre_data, hogger_data]:
+		var data := raw as EnemyData
+		if data == null:
+			continue
+		var label: String = data.display_name
+		if label.is_empty():
+			label = String(data.id)
+		items.append({"id": data.id, "name": label})
+	return items
+
+
+func spawn_debug(id: StringName) -> void:
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player == null or not is_instance_valid(player):
+		return
+	var parent := get_tree().get_first_node_in_group("entities")
+	if parent == null:
+		return
+	var is_hogger := hogger_data != null and hogger_data.id == id
+	var scene := hogger_scene if is_hogger else enemy_scene
+	var data := hogger_data if is_hogger else _data_by_id(id)
+	if scene == null or data == null:
+		return
+	var enemy := scene.instantiate() as Enemy
+	var desired := player.global_position + Vector2.from_angle(randf() * TAU) * 200.0
+	enemy.global_position = _snap_spawn(parent, desired)
+	parent.add_child(enemy)
+	enemy.apply_data(data)
+	enemy.health = enemy.max_health
+	if not enemy.died.is_connected(_on_enemy_died):
+		enemy.died.connect(_on_enemy_died)
+	if is_hogger:
+		hogger_spawned = true
+		boss_spawned.emit(enemy)
+
+
+func _data_by_id(id: StringName) -> EnemyData:
+	for raw in [skeleton_data, grunt_data, ogre_data]:
+		var data := raw as EnemyData
+		if data != null and data.id == id:
+			return data
+	return null
+
+
 func _spawn_pack(player: Node2D, data: EnemyData, count: int, cap: int) -> void:
 	if data == null or enemy_scene == null:
 		return
