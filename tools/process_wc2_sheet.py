@@ -1,9 +1,10 @@
 """Pack Warcraft II grunt/ogre sheets into regular 5x11 atlases.
 
 Layout matches the paladin: columns are N, NE, E, SE, S; rows are walk (0-4),
-attack (5-8), then death (9-10). Ogre death is two interleaved 3-frame clips,
-not a linear wrap: NE is (4,9)/(1,10)/(3,10), SE is (0,10)/(2,10)/(4,10).
-West facings are mirrored in-game.
+attack (5-8), then death (9-10). Sprites are packed left-to-right from detected
+blobs so irregular death rows stay intact. Ogre death is two interleaved
+3-frame clips, not a linear wrap: NE is (4,9)/(1,10)/(3,10), SE is
+(0,10)/(2,10)/(4,10). West facings are mirrored in-game.
 
 Run: python tools/process_wc2_sheet.py
 """
@@ -127,9 +128,51 @@ def _content_bands(height: int, rows: list[bytearray], width: int) -> list[tuple
     return bands[:ROWS]
 
 
-def _is_watermark(row_i: int, col_i: int, bw: int, bh: int) -> bool:
+def _is_watermark(row_i: int, bw: int, bh: int) -> bool:
     # Credit plaque sits in the last row, usually a wide short box.
-    return row_i == ROWS - 1 and col_i >= 3 and bh <= 36 and bw >= 50
+    return row_i == ROWS - 1 and bh <= 36 and bw >= 50
+
+
+def _sprites_in_band(
+    src_rows: list[bytearray], width: int, height: int, y0: int, y1: int, min_area: int = 200
+) -> list[tuple[int, int, int, int]]:
+    col_has = [False] * width
+    for y in range(y0, y1 + 1):
+        row = src_rows[y]
+        for x in range(width):
+            if _visible(row[x * 4 : x * 4 + 4]):
+                col_has[x] = True
+    runs: list[tuple[int, int]] = []
+    start: int | None = None
+    for x in range(width):
+        if col_has[x]:
+            if start is None:
+                start = x
+        elif start is not None:
+            runs.append((start, x - 1))
+            start = None
+    if start is not None:
+        runs.append((start, width - 1))
+
+    sprites: list[tuple[int, int, int, int]] = []
+    for sx, ex in runs:
+        minx, miny, maxx, maxy = width, height, -1, -1
+        for y in range(y0, y1 + 1):
+            row = src_rows[y]
+            for x in range(sx, ex + 1):
+                if _visible(row[x * 4 : x * 4 + 4]):
+                    minx = min(minx, x)
+                    maxx = max(maxx, x)
+                    miny = min(miny, y)
+                    maxy = max(maxy, y)
+        if maxx < 0:
+            continue
+        bw = maxx - minx + 1
+        bh = maxy - miny + 1
+        if bw * bh < min_area:
+            continue
+        sprites.append((minx, miny, maxx, maxy))
+    return sprites
 
 
 def pack_unit(src_name: str, out_name: str, cell: int) -> None:
@@ -139,9 +182,6 @@ def pack_unit(src_name: str, out_name: str, cell: int) -> None:
         raise SystemExit(f"missing source sheet: {src}")
 
     width, height, rows = read_png(src)
-    if width % COLS != 0:
-        raise SystemExit(f"{src_name} width {width} is not divisible by {COLS}")
-    col_w = width // COLS
     bands = _content_bands(height, rows, width)
     if len(bands) < ROWS:
         raise SystemExit(f"{src_name}: expected {ROWS} sprite rows, found {len(bands)}")
@@ -154,24 +194,19 @@ def pack_unit(src_name: str, out_name: str, cell: int) -> None:
     max_h = 0
 
     for row_i, (y0, y1) in enumerate(bands):
-        for col_i in range(COLS):
-            x0 = col_i * col_w
-            x1 = x0 + col_w
-            minx, miny, maxx, maxy = width, height, -1, -1
-            for y in range(y0, y1 + 1):
-                src_row = rows[y]
-                for x in range(x0, x1):
-                    if _visible(src_row[x * 4 : x * 4 + 4]):
-                        minx = min(minx, x)
-                        maxx = max(maxx, x)
-                        miny = min(miny, y)
-                        maxy = max(maxy, y)
-            if maxx < 0:
-                continue
+        sprites = []
+        for minx, miny, maxx, maxy in _sprites_in_band(rows, width, height, y0, y1):
             bw = maxx - minx + 1
             bh = maxy - miny + 1
-            if _is_watermark(row_i, col_i, bw, bh):
+            if _is_watermark(row_i, bw, bh):
                 continue
+            sprites.append((minx, miny, maxx, maxy))
+        if len(sprites) > COLS:
+            sprites.sort(key=lambda s: (s[2] - s[0] + 1) * (s[3] - s[1] + 1), reverse=True)
+            sprites = sorted(sprites[:COLS], key=lambda s: s[0])
+        for col_i, (minx, miny, maxx, maxy) in enumerate(sprites[:COLS]):
+            bw = maxx - minx + 1
+            bh = maxy - miny + 1
             max_w = max(max_w, bw)
             max_h = max(max_h, bh)
             if bw > cell or bh > cell:
