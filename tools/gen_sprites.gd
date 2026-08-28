@@ -7,6 +7,7 @@ func _init() -> void:
 	_gen_tiles()
 	# Paladin uses the Warcraft II knight sheet at assets/sprites/player/paladin.png.
 	# Skeleton uses tools/process_skeleton_sheet.py.
+	# Grunt / ogre use tools/process_wc2_sheet.py.
 	_gen_hogger()
 	_gen_weapons()
 	_gen_fx()

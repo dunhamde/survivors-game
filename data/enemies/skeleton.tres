@@ -15,3 +15,7 @@ contact_damage = 8
 collision_radius = 11.0
 sheet_cols = 5
 sheet_rows = 10
+sheet_cols_are_dirs = false
+walk_frames = 5
+death_row = 9
+death_frames = 5

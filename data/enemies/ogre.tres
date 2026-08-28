@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/ogre.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"ogre"
+display_name = "Ogre"
+texture = ExtResource("2")
+max_health = 110
+move_speed = 42.0
+xp_value = 6
+contact_damage = 15
+collision_radius = 16.0
+sheet_cols = 5
+sheet_rows = 11
+sheet_cols_are_dirs = true
+walk_frames = 5
+death_row = 9
+death_frames = 10

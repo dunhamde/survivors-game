@@ -4,15 +4,10 @@ extends CharacterBody2D
 signal died
 signal damaged(current: int, maximum: int)
 
-const SHEET_COLS := 5
-const SHEET_ROWS := 10
-const WALK_FRAMES := 5
-const DEATH_ROW := 9
-const DEATH_FRAMES := 5
 const WALK_FPS := 8.0
 const DEATH_FPS := 10.0
 const DEATH_HOLD := 0.15
-# Octants are E, SE, S, SW, W, NW, N, NE. Sheet rows are S, SE, E, NE, N, NW, W, SW.
+# Octants are E, SE, S, SW, W, NW, N, NE. Skeleton rows are S, SE, E, NE, N, NW, W, SW.
 const DIR_ROWS := [2, 1, 0, 7, 6, 5, 4, 3]
 
 @export var data: EnemyData
@@ -25,11 +20,18 @@ var health: int
 var _player: Node2D
 var _flash: float = 0.0
 var _dir_row: int = 0
+var _dir_col: int = 4
+var _dir_flip: bool = false
 var _walk_time: float = 0.0
 var _dying: bool = false
 var _death_time: float = 0.0
 var _death_finishing: bool = false
 var _uses_sheet: bool = false
+var _sheet_cols: int = 5
+var _cols_are_dirs: bool = false
+var _walk_frames: int = 5
+var _death_row: int = 9
+var _death_frames: int = 5
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
@@ -51,6 +53,11 @@ func apply_data(p_data: EnemyData) -> void:
 	xp_value = p_data.xp_value
 	contact_damage = p_data.contact_damage
 	_uses_sheet = p_data.sheet_cols > 1
+	_sheet_cols = maxi(1, p_data.sheet_cols)
+	_cols_are_dirs = p_data.sheet_cols_are_dirs
+	_walk_frames = maxi(1, p_data.walk_frames)
+	_death_row = p_data.death_row
+	_death_frames = maxi(1, p_data.death_frames)
 	if sprite != null and p_data.texture != null:
 		sprite.texture = p_data.texture
 		sprite.centered = true
@@ -108,7 +115,7 @@ func _animate_walk(delta: float, direction: Vector2) -> void:
 	if direction.length() > 0.1:
 		_set_facing_from_vector(direction)
 		_walk_time += delta
-		_show_walk_frame(int(_walk_time * WALK_FPS) % WALK_FRAMES)
+		_show_walk_frame(int(_walk_time * WALK_FPS) % _walk_frames)
 	else:
 		_walk_time = 0.0
 		_show_walk_frame(0)
@@ -116,11 +123,14 @@ func _animate_walk(delta: float, direction: Vector2) -> void:
 
 func _animate_death(delta: float) -> void:
 	_death_time += delta
-	var death_frame := mini(int(_death_time * DEATH_FPS), DEATH_FRAMES - 1)
-	_show_frame(DEATH_ROW, death_frame)
+	var death_frame := mini(int(_death_time * DEATH_FPS), _death_frames - 1)
+	if _cols_are_dirs:
+		_show_frame(_death_row + int(death_frame / _sheet_cols), death_frame % _sheet_cols, false)
+	else:
+		_show_frame(_death_row, death_frame, false)
 	if _death_finishing:
 		return
-	if _death_time >= (float(DEATH_FRAMES) / DEATH_FPS) + DEATH_HOLD:
+	if _death_time >= (float(_death_frames) / DEATH_FPS) + DEATH_HOLD:
 		_death_finishing = true
 		set_physics_process(false)
 		call_deferred("_finish_death")
@@ -130,18 +140,49 @@ func _set_facing_from_vector(direction: Vector2) -> void:
 	if direction.length_squared() < 0.0001:
 		return
 	var octant := posmod(int(round(direction.angle() / (PI * 0.25))), 8)
-	_dir_row = DIR_ROWS[octant]
+	if _cols_are_dirs:
+		# Sheet cols are N, NE, E, SE, S; west facings are mirrored.
+		match octant:
+			0:
+				_dir_col = 2
+				_dir_flip = false
+			1:
+				_dir_col = 3
+				_dir_flip = false
+			2:
+				_dir_col = 4
+				_dir_flip = false
+			3:
+				_dir_col = 3
+				_dir_flip = true
+			4:
+				_dir_col = 2
+				_dir_flip = true
+			5:
+				_dir_col = 1
+				_dir_flip = true
+			6:
+				_dir_col = 0
+				_dir_flip = false
+			7:
+				_dir_col = 1
+				_dir_flip = false
+	else:
+		_dir_row = DIR_ROWS[octant]
 
 
 func _show_walk_frame(walk_frame: int) -> void:
-	_show_frame(_dir_row, walk_frame)
+	if _cols_are_dirs:
+		_show_frame(walk_frame, _dir_col, _dir_flip)
+	else:
+		_show_frame(_dir_row, walk_frame, false)
 
 
-func _show_frame(row: int, col: int) -> void:
+func _show_frame(row: int, col: int, flip: bool) -> void:
 	if sprite == null:
 		return
-	sprite.frame = row * SHEET_COLS + col
-	sprite.flip_h = false
+	sprite.frame = row * _sheet_cols + col
+	sprite.flip_h = flip
 
 
 func _update_flash(delta: float) -> void:
@@ -172,7 +213,7 @@ func _die() -> void:
 	if _uses_sheet:
 		_dying = true
 		_death_time = 0.0
-		_show_frame(DEATH_ROW, 0)
+		_show_frame(_death_row, 0, false)
 		return
 	set_physics_process(false)
 	# Spawning an Area2D (XP mote) during body_entered / overlapping-body

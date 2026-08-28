@@ -45,6 +45,6 @@ python3 -m http.server -d build/web 8080
 
 - Elwynn Forest map + Goldshire backdrop
 - Paladin with Holy Strike, Consecration, Hammer of Wrath
-- Skeletons and Hogger
+- Skeletons, grunts, ogres, and Hogger
 - XP, level-ups, and upgrade choices
 - Touch controls + GitHub Pages web build

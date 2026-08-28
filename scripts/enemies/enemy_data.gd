@@ -11,3 +11,7 @@ extends Resource
 @export var collision_radius: float = 12.0
 @export var sheet_cols: int = 1
 @export var sheet_rows: int = 1
+@export var sheet_cols_are_dirs: bool = false
+@export var walk_frames: int = 5
+@export var death_row: int = 9
+@export var death_frames: int = 5

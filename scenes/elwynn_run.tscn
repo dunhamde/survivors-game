@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/run/run_controller.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/run/elwynn_map.gd" id="2"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/hogger.tscn" id="6"]
 [ext_resource type="Resource" path="res://data/enemies/skeleton.tres" id="7"]
+[ext_resource type="Resource" path="res://data/enemies/grunt.tres" id="8"]
+[ext_resource type="Resource" path="res://data/enemies/ogre.tres" id="9"]
 [ext_resource type="Resource" path="res://data/enemies/hogger.tres" id="10"]
 [ext_resource type="Texture2D" path="res://assets/tiles/elwynn/goldshire_silhouette.png" id="11"]
 [ext_resource type="Script" path="res://scripts/ui/level_up_ui.gd" id="12"]
@@ -106,6 +108,8 @@ script = ExtResource("4")
 enemy_scene = ExtResource("5")
 hogger_scene = ExtResource("6")
 skeleton_data = ExtResource("7")
+grunt_data = ExtResource("8")
+ogre_data = ExtResource("9")
 hogger_data = ExtResource("10")
 
 [node name="HUD" type="CanvasLayer" parent="."]

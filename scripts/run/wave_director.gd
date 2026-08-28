@@ -6,13 +6,15 @@ signal enemy_killed
 @export var enemy_scene: PackedScene
 @export var hogger_scene: PackedScene
 @export var skeleton_data: EnemyData
+@export var grunt_data: EnemyData
+@export var ogre_data: EnemyData
 @export var hogger_data: EnemyData
 @export var spawn_radius: float = 430.0
 @export var hogger_time: float = ElwynnBeats.HOGGER_AT
 
 var elapsed: float = 0.0
 var hogger_spawned: bool = false
-var _cooldowns: Dictionary = {"skeleton": 0.0, "pack": 0.0, "swarm": 0.0}
+var _cooldowns: Dictionary = {"skeleton": 0.0, "grunt": 0.0, "ogre": 0.0}
 
 
 func _physics_process(delta: float) -> void:
@@ -37,17 +39,17 @@ func _tick_spawns(delta: float, player: Node2D) -> void:
 		_spawn_pack(player, skeleton_data, 1, cap)
 		_cooldowns["skeleton"] = _skeleton_interval()
 
-	if elapsed >= ElwynnBeats.PACK_AT:
-		_cooldowns["pack"] = float(_cooldowns["pack"]) - delta
-		if float(_cooldowns["pack"]) <= 0.0:
-			_spawn_pack(player, skeleton_data, 4, cap)
-			_cooldowns["pack"] = _pack_interval()
+	if elapsed >= ElwynnBeats.GRUNTS_AT:
+		_cooldowns["grunt"] = float(_cooldowns["grunt"]) - delta
+		if float(_cooldowns["grunt"]) <= 0.0:
+			_spawn_pack(player, grunt_data, 2, cap)
+			_cooldowns["grunt"] = _grunt_interval()
 
-	if elapsed >= ElwynnBeats.SWARM_AT:
-		_cooldowns["swarm"] = float(_cooldowns["swarm"]) - delta
-		if float(_cooldowns["swarm"]) <= 0.0:
-			_spawn_pack(player, skeleton_data, 5, cap)
-			_cooldowns["swarm"] = _swarm_interval()
+	if elapsed >= ElwynnBeats.OGRES_AT:
+		_cooldowns["ogre"] = float(_cooldowns["ogre"]) - delta
+		if float(_cooldowns["ogre"]) <= 0.0:
+			_spawn_pack(player, ogre_data, 1, cap)
+			_cooldowns["ogre"] = _ogre_interval()
 
 
 func _alive_cap() -> int:
@@ -55,9 +57,9 @@ func _alive_cap() -> int:
 		return 48
 	if elapsed >= ElwynnBeats.RAMP_AT:
 		return 85
-	if elapsed >= ElwynnBeats.SWARM_AT:
+	if elapsed >= ElwynnBeats.OGRES_AT:
 		return 70
-	if elapsed >= ElwynnBeats.PACK_AT:
+	if elapsed >= ElwynnBeats.GRUNTS_AT:
 		return 55
 	return 32
 
@@ -70,7 +72,7 @@ func _skeleton_interval() -> float:
 	return 0.85
 
 
-func _pack_interval() -> float:
+func _grunt_interval() -> float:
 	if elapsed >= hogger_time:
 		return 2.8
 	if elapsed >= ElwynnBeats.RAMP_AT:
@@ -78,12 +80,12 @@ func _pack_interval() -> float:
 	return 2.4
 
 
-func _swarm_interval() -> float:
+func _ogre_interval() -> float:
 	if elapsed >= hogger_time:
-		return 2.6
+		return 3.2
 	if elapsed >= ElwynnBeats.RAMP_AT:
-		return 1.5
-	return 2.1
+		return 2.0
+	return 2.6
 
 
 func _spawn_pack(player: Node2D, data: EnemyData, count: int, cap: int) -> void:
