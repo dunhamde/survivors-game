@@ -5,7 +5,7 @@ extends SceneTree
 
 func _init() -> void:
 	_gen_tiles()
-	_gen_paladin()
+	# Paladin uses the Warcraft II knight sheet at assets/sprites/player/paladin.png.
 	_gen_gnoll()
 	_gen_kobold()
 	_gen_murloc()
@@ -72,15 +72,8 @@ func _circle(img: Image, cx: int, cy: int, r: int, c: Color, fill: bool = true) 
 
 
 # --- palettes ---
-const SKIN := Color("e8c4a0")
-const SKIN_D := Color("c4926e")
-const HAIR := Color("3d2914")
-const PLATE := Color("d2d7e1")
-const PLATE_D := Color("8c96a5")
 const GOLD := Color("d4a017")
 const GOLD_L := Color("f0d060")
-const BLUE := Color("2b5ba8")
-const BLUE_D := Color("1a3a70")
 const LEATHER := Color("5c4028")
 const BLACK := Color("1a1410")
 const WHITE := Color("f4f0e8")
@@ -147,50 +140,6 @@ func _fill_tile32(img: Image, tx: int, ty: int, a: Color, b: Color, c: Color, fl
 		_px(img, ox + 9, oy + 10, WHITE)
 		_px(img, ox + 22, oy + 18, Color("d070a0"))
 		_px(img, ox + 23, oy + 18, WHITE)
-
-
-func _gen_paladin() -> void:
-	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	# legs
-	_rect(img, 10, 24, 5, 7, PLATE_D)
-	_rect(img, 17, 24, 5, 7, PLATE_D)
-	_rect(img, 10, 30, 5, 2, LEATHER)
-	_rect(img, 17, 30, 5, 2, LEATHER)
-	# tabard / torso
-	_rect(img, 9, 14, 14, 11, PLATE)
-	_rect(img, 12, 15, 8, 10, BLUE)
-	_rect(img, 15, 15, 2, 10, GOLD)
-	_rect(img, 12, 19, 8, 2, GOLD)
-	# arms
-	_rect(img, 6, 15, 4, 8, PLATE)
-	_rect(img, 22, 15, 4, 8, PLATE)
-	# shield (left)
-	_rect(img, 2, 14, 7, 12, BLUE_D)
-	_outline_rect(img, 2, 14, 7, 12, GOLD)
-	_px(img, 5, 16, GOLD_L)
-	_px(img, 5, 17, GOLD_L)
-	_px(img, 4, 18, GOLD_L)
-	_px(img, 5, 18, GOLD_L)
-	_px(img, 6, 18, GOLD_L)
-	_px(img, 5, 19, GOLD_L)
-	_px(img, 5, 20, GOLD_L)
-	# sword (right)
-	_rect(img, 25, 8, 3, 14, Color("c0c8d4"))
-	_rect(img, 24, 20, 5, 2, GOLD)
-	_px(img, 26, 7, WHITE)
-	# head
-	_rect(img, 11, 5, 10, 9, SKIN)
-	_rect(img, 11, 5, 10, 3, HAIR)
-	_rect(img, 11, 5, 2, 7, HAIR)
-	_rect(img, 19, 5, 2, 6, HAIR)
-	_px(img, 14, 10, BLACK)
-	_px(img, 18, 10, BLACK)
-	_rect(img, 14, 12, 4, 1, SKIN_D)
-	# helm brow
-	_rect(img, 10, 7, 12, 2, PLATE)
-	_rect(img, 14, 6, 4, 2, GOLD)
-	_save(img, "res://assets/sprites/player/paladin.png")
 
 
 func _gen_gnoll() -> void:

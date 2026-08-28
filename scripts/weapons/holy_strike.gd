@@ -34,7 +34,9 @@ func _nearest_in_range() -> Node2D:
 func _fire(target: Node2D) -> void:
 	var slash := SLASH_SCENE.instantiate() as Area2D
 	var direction := global_position.direction_to(target.global_position)
-	slash.global_position = global_position + direction * 20.0
+	if player.has_method("play_attack"):
+		player.play_attack(direction)
+	slash.global_position = global_position + direction * 28.0
 	slash.rotation = direction.angle()
 	slash.damage = current_damage()
 	slash.scale = Vector2.ONE * (current_area() / 80.0)

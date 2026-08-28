@@ -5,6 +5,19 @@ signal health_changed(current: int, maximum: int)
 signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(new_level: int)
 
+const SHEET_COLS := 5
+const SHEET_ROWS := 11
+const WALK_FRAMES := 5
+const ATTACK_ROW := 5
+const ATTACK_FRAMES := 4
+const DEATH_ROW := 9
+const DEATH_FRAMES := 10
+const WALK_FPS := 8.0
+const ATTACK_FPS := 12.0
+const DEATH_FPS := 10.0
+const DEATH_HOLD := 0.4
+const SPRITE_POS := Vector2(0.0, -30.0)
+
 @export var move_speed: float = 130.0
 @export var max_health: int = 120
 @export var invuln_time: float = 0.55
@@ -19,7 +32,13 @@ var level: int = 1
 var xp: int = 0
 var xp_to_next: int = 8
 var _invuln_remaining: float = 0.0
-var _bob: float = 0.0
+var _dir_col: int = 4
+var _dir_flip: bool = false
+var _attacking: bool = false
+var _attack_time: float = 0.0
+var _walk_time: float = 0.0
+var _death_time: float = 0.0
+var _death_emitted: bool = false
 
 
 func _ready() -> void:
@@ -28,11 +47,17 @@ func _ready() -> void:
 	health_changed.emit(health, max_health)
 	xp_changed.emit(xp, xp_to_next, level)
 	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
+	sprite.hframes = SHEET_COLS
+	sprite.vframes = SHEET_ROWS
+	sprite.centered = true
+	sprite.position = SPRITE_POS
+	_show_walk_frame(0)
 
 
 func _physics_process(delta: float) -> void:
 	if not alive:
 		velocity = Vector2.ZERO
+		_animate_death(delta)
 		return
 
 	if _invuln_remaining > 0.0:
@@ -53,15 +78,84 @@ func _physics_process(delta: float) -> void:
 
 
 func _animate(delta: float, input_vector: Vector2) -> void:
-	if input_vector.x < -0.1:
-		sprite.flip_h = true
-	elif input_vector.x > 0.1:
-		sprite.flip_h = false
+	if _attacking:
+		_attack_time += delta
+		var attack_frame := int(_attack_time * ATTACK_FPS)
+		if attack_frame >= ATTACK_FRAMES:
+			_attacking = false
+			_attack_time = 0.0
+		else:
+			_show_frame(ATTACK_ROW + attack_frame, _dir_col, _dir_flip)
+			return
+
 	if input_vector.length() > 0.1:
-		_bob += delta * 10.0
-		sprite.position.y = -16.0 + sin(_bob) * 1.0
+		_set_facing_from_vector(input_vector)
+		_walk_time += delta
+		_show_walk_frame(int(_walk_time * WALK_FPS) % WALK_FRAMES)
 	else:
-		sprite.position.y = -16.0
+		_walk_time = 0.0
+		_show_walk_frame(0)
+
+
+func _animate_death(delta: float) -> void:
+	_death_time += delta
+	var death_frame := mini(int(_death_time * DEATH_FPS), DEATH_FRAMES - 1)
+	_show_frame(DEATH_ROW + int(death_frame / SHEET_COLS), death_frame % SHEET_COLS, false)
+	if _death_emitted:
+		return
+	if _death_time >= (float(DEATH_FRAMES) / DEATH_FPS) + DEATH_HOLD:
+		_death_emitted = true
+		died.emit()
+
+
+func play_attack(toward: Vector2) -> void:
+	if not alive:
+		return
+	_set_facing_from_vector(toward)
+	_attacking = true
+	_attack_time = 0.0
+	_show_frame(ATTACK_ROW, _dir_col, _dir_flip)
+
+
+func _set_facing_from_vector(direction: Vector2) -> void:
+	if direction.length_squared() < 0.0001:
+		return
+	# 0=E, 1=SE, 2=S, 3=SW, 4=W, 5=NW, 6=N, 7=NE. Sheet cols are N, NE, E, SE, S.
+	var octant := posmod(int(round(direction.angle() / (PI * 0.25))), 8)
+	match octant:
+		0:
+			_dir_col = 2
+			_dir_flip = false
+		1:
+			_dir_col = 3
+			_dir_flip = false
+		2:
+			_dir_col = 4
+			_dir_flip = false
+		3:
+			_dir_col = 3
+			_dir_flip = true
+		4:
+			_dir_col = 2
+			_dir_flip = true
+		5:
+			_dir_col = 1
+			_dir_flip = true
+		6:
+			_dir_col = 0
+			_dir_flip = false
+		7:
+			_dir_col = 1
+			_dir_flip = false
+
+
+func _show_walk_frame(walk_frame: int) -> void:
+	_show_frame(walk_frame, _dir_col, _dir_flip)
+
+
+func _show_frame(row: int, col: int, flip: bool) -> void:
+	sprite.frame = row * SHEET_COLS + col
+	sprite.flip_h = flip
 
 
 func take_damage(amount: int) -> void:
@@ -71,9 +165,18 @@ func take_damage(amount: int) -> void:
 	health_changed.emit(health, max_health)
 	_invuln_remaining = invuln_time
 	if health <= 0:
-		alive = false
-		velocity = Vector2.ZERO
-		died.emit()
+		_die()
+
+
+func _die() -> void:
+	alive = false
+	velocity = Vector2.ZERO
+	modulate.a = 1.0
+	_attacking = false
+	_death_time = 0.0
+	if hurtbox != null:
+		hurtbox.set_deferred("monitoring", false)
+	_show_frame(DEATH_ROW, 0, false)
 
 
 func heal(amount: int) -> void:
