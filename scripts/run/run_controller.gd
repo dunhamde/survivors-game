@@ -165,7 +165,7 @@ func _on_boss_died() -> void:
 func _on_player_died() -> void:
 	if _won:
 		return
-	_end_run("You Died", "The gnolls overrun the Goldshire road.")
+	_end_run("You Died", "The skeletons overrun the Goldshire road.")
 
 
 func _end_run(title: String, flavor: String) -> void:

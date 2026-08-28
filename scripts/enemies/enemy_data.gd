@@ -9,3 +9,5 @@ extends Resource
 @export var xp_value: int = 2
 @export var contact_damage: int = 8
 @export var collision_radius: float = 12.0
+@export var sheet_cols: int = 1
+@export var sheet_rows: int = 1

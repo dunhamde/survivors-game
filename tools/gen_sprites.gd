@@ -6,9 +6,7 @@ extends SceneTree
 func _init() -> void:
 	_gen_tiles()
 	# Paladin uses the Warcraft II knight sheet at assets/sprites/player/paladin.png.
-	_gen_gnoll()
-	_gen_kobold()
-	_gen_murloc()
+	# Skeleton uses tools/process_skeleton_sheet.py.
 	_gen_hogger()
 	_gen_weapons()
 	_gen_fx()
@@ -82,18 +80,7 @@ const GNOLL := Color("c4a574")
 const GNOLL_D := Color("8b6914")
 const GNOLL_F := Color("6b4423")
 const CLOTH_R := Color("8b2020")
-
-const KOB := Color("c8b896")
-const KOB_D := Color("8a7a58")
 const CANDLE := Color("ffcc44")
-const HAT := Color("c45c20")
-const PICK := Color("888888")
-
-const MUR := Color("4a8b6f")
-const MUR_L := Color("6cba8e")
-const MUR_BELLY := Color("c4b896")
-const MUR_EYE := Color("ffdd44")
-const MUR_MOUTH := Color("cc4466")
 
 const GRASS_A := Color("3d6b2e")
 const GRASS_B := Color("4a7a35")
@@ -140,84 +127,6 @@ func _fill_tile32(img: Image, tx: int, ty: int, a: Color, b: Color, c: Color, fl
 		_px(img, ox + 9, oy + 10, WHITE)
 		_px(img, ox + 22, oy + 18, Color("d070a0"))
 		_px(img, ox + 23, oy + 18, WHITE)
-
-
-func _gen_gnoll() -> void:
-	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	_rect(img, 10, 23, 5, 8, GNOLL_F)
-	_rect(img, 17, 23, 5, 8, GNOLL_F)
-	_rect(img, 9, 14, 14, 10, CLOTH_R)
-	_rect(img, 9, 14, 14, 3, GNOLL)
-	# snout
-	_rect(img, 10, 6, 12, 9, GNOLL)
-	_rect(img, 8, 10, 16, 5, GNOLL)
-	_rect(img, 6, 11, 5, 4, GNOLL_D) # snout
-	_px(img, 7, 12, BLACK)
-	# ears
-	_rect(img, 9, 3, 4, 5, GNOLL_D)
-	_rect(img, 19, 3, 4, 5, GNOLL_D)
-	_px(img, 13, 9, BLACK)
-	_px(img, 18, 9, BLACK)
-	# hyena mane
-	_rect(img, 14, 4, 4, 4, GNOLL_F)
-	# club
-	_rect(img, 24, 12, 4, 12, Color("6a4a28"))
-	_rect(img, 23, 10, 6, 5, Color("5a3a1c"))
-	_save(img, "res://assets/sprites/enemies/gnoll.png")
-
-
-func _gen_kobold() -> void:
-	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	_rect(img, 11, 24, 4, 7, KOB_D)
-	_rect(img, 17, 24, 4, 7, KOB_D)
-	_rect(img, 10, 16, 12, 9, KOB)
-	_rect(img, 11, 8, 10, 9, KOB)
-	# ears
-	_rect(img, 8, 8, 4, 6, KOB_D)
-	_rect(img, 20, 8, 4, 6, KOB_D)
-	_px(img, 14, 12, BLACK)
-	_px(img, 18, 12, BLACK)
-	_rect(img, 14, 15, 4, 2, Color("4a3020"))
-	# candle on head
-	_rect(img, 14, 2, 4, 7, WHITE)
-	_rect(img, 15, 0, 2, 3, CANDLE)
-	_px(img, 15, 0, Color("ff8822"))
-	# pickaxe
-	_rect(img, 23, 14, 2, 12, Color("6a4a28"))
-	_rect(img, 21, 12, 8, 3, PICK)
-	_save(img, "res://assets/sprites/enemies/kobold.png")
-
-
-func _gen_murloc() -> void:
-	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	# body
-	_rect(img, 10, 14, 12, 12, MUR)
-	_rect(img, 12, 18, 8, 7, MUR_BELLY)
-	# legs / fins
-	_rect(img, 10, 26, 5, 5, MUR_L)
-	_rect(img, 17, 26, 5, 5, MUR_L)
-	# head
-	_rect(img, 9, 6, 14, 10, MUR)
-	# huge eyes
-	_rect(img, 11, 8, 5, 5, WHITE)
-	_rect(img, 17, 8, 5, 5, WHITE)
-	_rect(img, 13, 10, 2, 2, BLACK)
-	_rect(img, 19, 10, 2, 2, BLACK)
-	_px(img, 12, 9, MUR_EYE)
-	_px(img, 18, 9, MUR_EYE)
-	# crest
-	_rect(img, 14, 2, 4, 5, MUR_L)
-	_px(img, 13, 3, MUR_L)
-	_px(img, 18, 3, MUR_L)
-	# mouth
-	_rect(img, 13, 14, 6, 2, MUR_MOUTH)
-	# arm fins
-	_rect(img, 6, 16, 4, 4, MUR_L)
-	_rect(img, 22, 16, 4, 4, MUR_L)
-	_save(img, "res://assets/sprites/enemies/murloc.png")
 
 
 func _gen_hogger() -> void:

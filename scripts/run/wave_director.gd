@@ -5,16 +5,14 @@ signal enemy_killed
 
 @export var enemy_scene: PackedScene
 @export var hogger_scene: PackedScene
-@export var gnoll_data: EnemyData
-@export var kobold_data: EnemyData
-@export var murloc_data: EnemyData
+@export var skeleton_data: EnemyData
 @export var hogger_data: EnemyData
 @export var spawn_radius: float = 430.0
 @export var hogger_time: float = ElwynnBeats.HOGGER_AT
 
 var elapsed: float = 0.0
 var hogger_spawned: bool = false
-var _cooldowns: Dictionary = {"gnoll": 0.0, "kobold": 0.0, "murloc": 0.0}
+var _cooldowns: Dictionary = {"skeleton": 0.0, "pack": 0.0, "swarm": 0.0}
 
 
 func _physics_process(delta: float) -> void:
@@ -34,56 +32,56 @@ func _physics_process(delta: float) -> void:
 
 func _tick_spawns(delta: float, player: Node2D) -> void:
 	var cap := _alive_cap()
-	_cooldowns["gnoll"] = float(_cooldowns["gnoll"]) - delta
-	if float(_cooldowns["gnoll"]) <= 0.0:
-		_spawn_pack(player, gnoll_data, 1, cap)
-		_cooldowns["gnoll"] = _gnoll_interval()
+	_cooldowns["skeleton"] = float(_cooldowns["skeleton"]) - delta
+	if float(_cooldowns["skeleton"]) <= 0.0:
+		_spawn_pack(player, skeleton_data, 1, cap)
+		_cooldowns["skeleton"] = _skeleton_interval()
 
-	if elapsed >= 90.0:
-		_cooldowns["kobold"] = float(_cooldowns["kobold"]) - delta
-		if float(_cooldowns["kobold"]) <= 0.0:
-			_spawn_pack(player, kobold_data, 4, cap)
-			_cooldowns["kobold"] = _kobold_interval()
+	if elapsed >= ElwynnBeats.PACK_AT:
+		_cooldowns["pack"] = float(_cooldowns["pack"]) - delta
+		if float(_cooldowns["pack"]) <= 0.0:
+			_spawn_pack(player, skeleton_data, 4, cap)
+			_cooldowns["pack"] = _pack_interval()
 
-	if elapsed >= 180.0:
-		_cooldowns["murloc"] = float(_cooldowns["murloc"]) - delta
-		if float(_cooldowns["murloc"]) <= 0.0:
-			_spawn_pack(player, murloc_data, 5, cap)
-			_cooldowns["murloc"] = _murloc_interval()
+	if elapsed >= ElwynnBeats.SWARM_AT:
+		_cooldowns["swarm"] = float(_cooldowns["swarm"]) - delta
+		if float(_cooldowns["swarm"]) <= 0.0:
+			_spawn_pack(player, skeleton_data, 5, cap)
+			_cooldowns["swarm"] = _swarm_interval()
 
 
 func _alive_cap() -> int:
 	if elapsed >= hogger_time:
 		return 48
-	if elapsed >= 300.0:
+	if elapsed >= ElwynnBeats.RAMP_AT:
 		return 85
-	if elapsed >= 180.0:
+	if elapsed >= ElwynnBeats.SWARM_AT:
 		return 70
-	if elapsed >= 90.0:
+	if elapsed >= ElwynnBeats.PACK_AT:
 		return 55
 	return 32
 
 
-func _gnoll_interval() -> float:
+func _skeleton_interval() -> float:
 	if elapsed >= hogger_time:
 		return 1.5
-	if elapsed >= 300.0:
+	if elapsed >= ElwynnBeats.RAMP_AT:
 		return 0.7
 	return 0.85
 
 
-func _kobold_interval() -> float:
+func _pack_interval() -> float:
 	if elapsed >= hogger_time:
 		return 2.8
-	if elapsed >= 300.0:
+	if elapsed >= ElwynnBeats.RAMP_AT:
 		return 1.7
 	return 2.4
 
 
-func _murloc_interval() -> float:
+func _swarm_interval() -> float:
 	if elapsed >= hogger_time:
 		return 2.6
-	if elapsed >= 300.0:
+	if elapsed >= ElwynnBeats.RAMP_AT:
 		return 1.5
 	return 2.1
 
