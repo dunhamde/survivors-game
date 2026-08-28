@@ -18,12 +18,14 @@ extends Node2D
 @onready var retry_button: Button = $HUD/EndPanel/Margin/VBox/RetryButton
 @onready var virtual_joystick: Control = $HUD/VirtualJoystick
 @onready var level_up_ui: CanvasLayer = $LevelUpUI
+@onready var pause_menu: CanvasLayer = $PauseMenu
 
 var kills: int = 0
 var elapsed: float = 0.0
 var running: bool = true
 var _level_queue: int = 0
 var _showing_level_up: bool = false
+var _menu_paused: bool = false
 var _boss: Node = null
 var _won: bool = false
 
@@ -39,6 +41,9 @@ func _ready() -> void:
 	player.died.connect(_on_player_died)
 	director.boss_spawned.connect(_on_boss_spawned)
 	level_up_ui.choice_made.connect(_on_choice_made)
+	pause_menu.toggle_requested.connect(_on_pause_toggle)
+	pause_menu.retry_pressed.connect(_restart)
+	pause_menu.quit_pressed.connect(_quit_game)
 	_on_health_changed(player.health, player.max_health)
 	_on_xp_changed(player.xp, player.xp_to_next, player.level)
 	kills_label.text = "Kills 0"
@@ -91,7 +96,7 @@ func _update_hint() -> void:
 	if _is_touch_ui():
 		hint_label.text = "Touch & drag to move · Auto-attack · Survive until Hogger"
 	else:
-		hint_label.text = "WASD / Arrows to move · Auto-attack · Survive until Hogger"
+		hint_label.text = "WASD / Arrows to move · Auto-attack · Esc to pause · Survive until Hogger"
 	if virtual_joystick != null and virtual_joystick.has_method("_update_visibility"):
 		virtual_joystick.call("_update_visibility")
 
@@ -114,7 +119,7 @@ func _on_leveled_up(_new_level: int) -> void:
 
 
 func _try_show_level_up() -> void:
-	if _showing_level_up or _level_queue <= 0 or not running:
+	if _showing_level_up or _level_queue <= 0 or not running or _menu_paused:
 		return
 	_showing_level_up = true
 	_level_queue -= 1
@@ -129,7 +134,7 @@ func _on_choice_made(choice: Dictionary) -> void:
 	level_up_ui.hide_ui()
 	if _level_queue > 0 and running:
 		_try_show_level_up()
-	else:
+	elif not _menu_paused:
 		get_tree().paused = false
 
 
@@ -168,12 +173,47 @@ func _on_player_died() -> void:
 	_end_run("You Died", "The gnolls overrun the Goldshire road.")
 
 
+func _on_pause_toggle() -> void:
+	if not _is_desktop_pause() or not running or _showing_level_up:
+		return
+	if _menu_paused:
+		_resume_from_pause()
+	else:
+		_pause_game()
+
+
+func _is_desktop_pause() -> bool:
+	return not OS.has_feature("mobile")
+
+
+func _pause_game() -> void:
+	_menu_paused = true
+	get_tree().paused = true
+	pause_menu.show_menu()
+
+
+func _resume_from_pause() -> void:
+	_menu_paused = false
+	pause_menu.hide_menu()
+	if _level_queue > 0 and running:
+		_try_show_level_up()
+	elif not _showing_level_up:
+		get_tree().paused = false
+
+
+func _quit_game() -> void:
+	get_tree().paused = false
+	get_tree().quit()
+
+
 func _end_run(title: String, flavor: String) -> void:
 	running = false
+	_menu_paused = false
 	get_tree().paused = false
 	_showing_level_up = false
 	_level_queue = 0
 	level_up_ui.hide_ui()
+	pause_menu.hide_menu()
 	if virtual_joystick != null:
 		virtual_joystick.visible = false
 	var retry_hint := "Tap Retry" if _is_touch_ui() else "Press Enter or Retry"
@@ -193,4 +233,5 @@ func _on_retry_pressed() -> void:
 
 
 func _restart() -> void:
+	get_tree().paused = false
 	get_tree().reload_current_scene()
