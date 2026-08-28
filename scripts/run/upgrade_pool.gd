@@ -17,6 +17,7 @@ static func build_choices(controller: WeaponController) -> Array[Dictionary]:
 	_maybe_upgrade(pool, controller, HOLY, HOLY_DATA)
 	_maybe_upgrade(pool, controller, CONS, CONS_DATA)
 	_maybe_upgrade(pool, controller, HAMMER, HAMMER_DATA)
+	pool.append_array(_stat_cards())
 	pool.shuffle()
 	var choices: Array[Dictionary] = []
 	var used: Dictionary = {}
@@ -27,6 +28,15 @@ static func build_choices(controller: WeaponController) -> Array[Dictionary]:
 		choices.append(option)
 		if choices.size() >= 3:
 			break
+	var fillers := _stat_cards()
+	fillers.shuffle()
+	for option in fillers:
+		if choices.size() >= 3:
+			break
+		if used.has(option.id):
+			continue
+		used[option.id] = true
+		choices.append(option)
 	while choices.size() < 3:
 		choices.append(_blessing_card())
 	return choices
@@ -45,6 +55,9 @@ static func apply(choice: Dictionary, player: Node, controller: WeaponController
 			controller.upgrade_weapon(CONS)
 		"upgrade_hammer_of_wrath":
 			controller.upgrade_weapon(HAMMER)
+		"magnetism":
+			if player.has_method("add_magnetism"):
+				player.add_magnetism(32.0)
 		_:
 			if player.has_method("add_max_health"):
 				player.add_max_health(15)
@@ -69,6 +82,17 @@ static func _maybe_upgrade(pool: Array[Dictionary], controller: WeaponController
 		"title": "%s Lv.%d" % [data.display_name, weapon.level + 1],
 		"desc": data.upgrade_hint,
 	})
+
+
+static func _stat_cards() -> Array[Dictionary]:
+	return [
+		_blessing_card(),
+		{
+			"id": "magnetism",
+			"title": "Magnetism",
+			"desc": "+32 gold pickup range.",
+		},
+	]
 
 
 static func _blessing_card() -> Dictionary:

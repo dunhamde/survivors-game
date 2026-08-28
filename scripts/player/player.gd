@@ -21,6 +21,7 @@ const SPRITE_POS := Vector2(0.0, -30.0)
 @export var move_speed: float = 130.0
 @export var max_health: int = 120
 @export var invuln_time: float = 0.55
+@export var magnetism: float = 56.0
 
 @onready var hurtbox: Area2D = $Hurtbox
 @onready var sprite: Sprite2D = $Sprite2D
@@ -189,6 +190,10 @@ func heal(amount: int) -> void:
 func add_max_health(amount: int) -> void:
 	max_health += amount
 	heal(amount)
+
+
+func add_magnetism(amount: float) -> void:
+	magnetism = maxf(0.0, magnetism + amount)
 
 
 func gain_xp(amount: int) -> void:
