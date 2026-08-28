@@ -83,8 +83,23 @@ func _update_time() -> void:
 	time_label.text = "%02d:%02d" % [minutes, seconds]
 
 
+func _is_desktop_web() -> bool:
+	if not OS.has_feature("web"):
+		return false
+	if OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios"):
+		return false
+	return true
+
+
 func _is_touch_ui() -> bool:
-	return OS.has_feature("web") or DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
+	if _is_desktop_web():
+		return false
+	return (
+		OS.has_feature("mobile")
+		or OS.has_feature("web_android")
+		or OS.has_feature("web_ios")
+		or DisplayServer.is_touchscreen_available()
+	)
 
 
 func _update_hint() -> void:

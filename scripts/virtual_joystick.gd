@@ -1,8 +1,9 @@
 extends Control
 
-## Touch-anywhere movement for mobile / web.
+## Touch-anywhere movement for phones and real touchscreens.
 ## Press sets the movement origin; drag until release aims relative to that point.
 ## The corner widget is a direction indicator only (not the touch target).
+## Desktop browsers use WASD / arrows — mouse is not treated as a stick.
 
 signal vector_changed(vector: Vector2)
 
@@ -32,9 +33,25 @@ func _ready() -> void:
 	queue_redraw()
 
 
+func _is_desktop_web() -> bool:
+	if not OS.has_feature("web"):
+		return false
+	if OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios"):
+		return false
+	return true
+
+
 func _update_visibility() -> void:
-	# Always show on web so phones (and desktop browsers used for testing) get a stick.
-	visible = always_show or OS.has_feature("web") or DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
+	if _is_desktop_web():
+		visible = always_show
+	else:
+		visible = (
+			always_show
+			or DisplayServer.is_touchscreen_available()
+			or OS.has_feature("mobile")
+			or OS.has_feature("web_android")
+			or OS.has_feature("web_ios")
+		)
 	queue_redraw()
 
 
@@ -55,7 +72,8 @@ func _draw() -> void:
 
 func _input(event: InputEvent) -> void:
 	# Hidden on end-screen; skipped while paused so level-up buttons keep working.
-	if not visible or get_tree().paused:
+	# Desktop browsers are keyboard-only so a mouse click cannot start a stick drag.
+	if not visible or get_tree().paused or _is_desktop_web():
 		return
 
 	if event is InputEventScreenTouch:
