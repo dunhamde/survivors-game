@@ -4,12 +4,6 @@ extends CharacterBody2D
 signal died
 signal damaged(current: int, maximum: int)
 
-const WALK_FPS := 8.0
-const DEATH_FPS := 10.0
-const DEATH_HOLD := 0.15
-# Octants are E, SE, S, SW, W, NW, N, NE. Skeleton rows are S, SE, E, NE, N, NW, W, SW.
-const DIR_ROWS := [2, 1, 0, 7, 6, 5, 4, 3]
-
 @export var data: EnemyData
 
 var max_health: int = 40
@@ -18,23 +12,9 @@ var xp_value: int = 2
 var contact_damage: int = 8
 var health: int
 var _player: Node2D
-var _flash: float = 0.0
-var _dir_row: int = 0
-var _dir_col: int = 4
-var _dir_flip: bool = false
-var _walk_time: float = 0.0
+var _anim: SheetAnimator
 var _dying: bool = false
-var _death_time: float = 0.0
 var _death_finishing: bool = false
-var _uses_sheet: bool = false
-var _sheet_cols: int = 5
-var _cols_are_dirs: bool = false
-var _walk_frames: int = 5
-var _death_row: int = 9
-var _death_frames: int = 5
-var _death_cells: Array[Vector2i] = []
-var _death_cells_south: Array[Vector2i] = []
-var _active_death_cells: Array[Vector2i] = []
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
@@ -42,6 +22,8 @@ var _active_death_cells: Array[Vector2i] = []
 
 func _ready() -> void:
 	add_to_group("enemies")
+	_anim = SheetAnimator.new()
+	_anim.bind(sprite, self)
 	if data != null:
 		apply_data(data)
 	health = max_health
@@ -55,28 +37,11 @@ func apply_data(p_data: EnemyData) -> void:
 	move_speed = p_data.move_speed
 	xp_value = p_data.xp_value
 	contact_damage = p_data.contact_damage
-	_uses_sheet = p_data.sheet_cols > 1
-	_sheet_cols = maxi(1, p_data.sheet_cols)
-	_cols_are_dirs = p_data.sheet_cols_are_dirs
-	_walk_frames = maxi(1, p_data.walk_frames)
-	_death_row = p_data.death_row
-	_death_frames = maxi(1, p_data.death_frames)
-	_death_cells = p_data.death_cells.duplicate()
-	_death_cells_south = p_data.death_cells_south.duplicate()
-	if sprite != null and p_data.texture != null:
-		sprite.texture = p_data.texture
-		sprite.centered = true
-		if _uses_sheet:
-			sprite.hframes = p_data.sheet_cols
-			sprite.vframes = p_data.sheet_rows
-			var cell_h := float(p_data.texture.get_height()) / float(p_data.sheet_rows)
-			sprite.position = Vector2(0.0, -cell_h * 0.42)
-			_show_walk_frame(0)
-		else:
-			sprite.hframes = 1
-			sprite.vframes = 1
-			sprite.flip_h = false
-			sprite.position = Vector2(0.0, -float(p_data.texture.get_height()) * 0.5)
+	_anim = SheetAnimator.from_enemy_data(p_data)
+	_anim.bind(sprite, self)
+	_anim.apply_layout()
+	if _anim.uses_sheet:
+		_anim.show_walk_frame(0)
 	var circle := CircleShape2D.new()
 	circle.radius = p_data.collision_radius
 	collision.shape = circle
@@ -113,102 +78,20 @@ func _chase(delta: float) -> void:
 
 
 func _animate_walk(delta: float, direction: Vector2) -> void:
-	if not _uses_sheet:
-		if sprite != null and absf(direction.x) > 0.1:
-			sprite.flip_h = direction.x < 0.0
-		return
-	if direction.length() > 0.1:
-		_set_facing_from_vector(direction)
-		_walk_time += delta
-		_show_walk_frame(int(_walk_time * WALK_FPS) % _walk_frames)
-	else:
-		_walk_time = 0.0
-		_show_walk_frame(0)
+	_anim.tick_alive(delta, direction)
 
 
 func _animate_death(delta: float) -> void:
-	_death_time += delta
-	var death_frame := mini(int(_death_time * DEATH_FPS), _death_frames - 1)
-	_show_death_frame(death_frame)
 	if _death_finishing:
 		return
-	if _death_time >= (float(_death_frames) / DEATH_FPS) + DEATH_HOLD:
+	if _anim.tick_death(delta):
 		_death_finishing = true
 		set_physics_process(false)
 		call_deferred("_finish_death")
 
 
-func _pick_death_cells() -> Array[Vector2i]:
-	# North/NE uses the up-right clip; E/SE/S uses the down-right clip when present.
-	if _death_cells_south.size() > 0 and _dir_col >= 2:
-		return _death_cells_south
-	return _death_cells
-
-
-func _show_death_frame(death_frame: int) -> void:
-	if _active_death_cells.size() > 0:
-		var cell := _active_death_cells[clampi(death_frame, 0, _active_death_cells.size() - 1)]
-		_show_frame(cell.y, cell.x, _dir_flip)
-		return
-	if _cols_are_dirs:
-		_show_frame(_death_row + int(death_frame / _sheet_cols), death_frame % _sheet_cols, _dir_flip)
-	else:
-		_show_frame(_death_row, death_frame, false)
-
-
-func _set_facing_from_vector(direction: Vector2) -> void:
-	if direction.length_squared() < 0.0001:
-		return
-	var octant := posmod(int(round(direction.angle() / (PI * 0.25))), 8)
-	if _cols_are_dirs:
-		# Sheet cols are N, NE, E, SE, S; west facings are mirrored.
-		match octant:
-			0:
-				_dir_col = 2
-				_dir_flip = false
-			1:
-				_dir_col = 3
-				_dir_flip = false
-			2:
-				_dir_col = 4
-				_dir_flip = false
-			3:
-				_dir_col = 3
-				_dir_flip = true
-			4:
-				_dir_col = 2
-				_dir_flip = true
-			5:
-				_dir_col = 1
-				_dir_flip = true
-			6:
-				_dir_col = 0
-				_dir_flip = false
-			7:
-				_dir_col = 1
-				_dir_flip = false
-	else:
-		_dir_row = DIR_ROWS[octant]
-
-
-func _show_walk_frame(walk_frame: int) -> void:
-	if _cols_are_dirs:
-		_show_frame(walk_frame, _dir_col, _dir_flip)
-	else:
-		_show_frame(_dir_row, walk_frame, false)
-
-
-func _show_frame(row: int, col: int, flip: bool) -> void:
-	if sprite == null:
-		return
-	sprite.frame = row * _sheet_cols + col
-	sprite.flip_h = flip
-
-
 func _update_flash(delta: float) -> void:
-	if _flash > 0.0:
-		_flash = maxf(0.0, _flash - delta)
-		modulate = Color(1.0, 0.55, 0.55) if _flash > 0.0 else Color.WHITE
+	_anim.tick_enemy_flash(delta)
 
 
 func take_damage(amount: int) -> void:
@@ -217,7 +100,7 @@ func take_damage(amount: int) -> void:
 	if DevCheats.god_mode:
 		amount = health
 	health = maxi(0, health - amount)
-	_flash = 0.08
+	_anim.trigger_enemy_flash()
 	damaged.emit(health, max_health)
 	if health <= 0:
 		_die()
@@ -232,13 +115,9 @@ func _die() -> void:
 	var run := get_tree().get_first_node_in_group("run")
 	if run != null and run.has_method("register_kill"):
 		run.register_kill()
-	if _uses_sheet:
+	if _anim.uses_sheet:
 		_dying = true
-		_death_time = 0.0
-		_active_death_cells = _pick_death_cells()
-		if _active_death_cells.size() > 0:
-			_death_frames = _active_death_cells.size()
-		_show_death_frame(0)
+		_anim.start_death()
 		return
 	set_physics_process(false)
 	# Spawning an Area2D (XP mote) during body_entered / overlapping-body
