@@ -2,8 +2,8 @@ extends Enemy
 
 enum Phase { CHASE, TELEGRAPH, CHARGE, RECOVER }
 
-const GNOLL_SCENE := preload("res://scenes/enemies/enemy.tscn")
-const GNOLL_DATA := preload("res://data/enemies/gnoll.tres")
+const MINION_SCENE := preload("res://scenes/enemies/enemy.tscn")
+const MINION_DATA := preload("res://data/enemies/skeleton.tres")
 
 var _phase: Phase = Phase.CHASE
 var _phase_time: float = 0.0
@@ -24,6 +24,9 @@ func _physics_process(delta: float) -> void:
 	if "alive" in _player and not _player.alive:
 		velocity = Vector2.ZERO
 		return
+	if health <= 0:
+		velocity = Vector2.ZERO
+		return
 
 	_summon_cd -= delta
 	_phase_time += delta
@@ -39,7 +42,7 @@ func _physics_process(delta: float) -> void:
 				velocity = Vector2.ZERO
 				modulate = Color(1.45, 0.75, 0.45)
 			if _summon_cd <= 0.0:
-				_summon_gnolls()
+				_summon_minions()
 				_summon_cd = 8.0
 		Phase.TELEGRAPH:
 			velocity = Vector2.ZERO
@@ -61,14 +64,17 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
-func _summon_gnolls() -> void:
+func _summon_minions() -> void:
 	var parent := get_tree().get_first_node_in_group("entities")
 	if parent == null:
 		return
 	for i in 2:
-		var gnoll := GNOLL_SCENE.instantiate() as Enemy
+		var minion := MINION_SCENE.instantiate() as Enemy
 		var offset := Vector2.from_angle(randf() * TAU) * 42.0
-		gnoll.global_position = global_position + offset
-		parent.add_child(gnoll)
-		gnoll.apply_data(GNOLL_DATA)
-		gnoll.health = gnoll.max_health
+		var desired := global_position + offset
+		if parent.has_method("snap_to_walkable"):
+			desired = parent.snap_to_walkable(desired)
+		minion.global_position = desired
+		parent.add_child(minion)
+		minion.apply_data(MINION_DATA)
+		minion.health = minion.max_health

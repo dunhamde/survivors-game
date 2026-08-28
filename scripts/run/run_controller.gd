@@ -16,6 +16,8 @@ extends Node2D
 @onready var end_title: Label = $HUD/EndPanel/Margin/VBox/Title
 @onready var end_stats: Label = $HUD/EndPanel/Margin/VBox/Stats
 @onready var retry_button: Button = $HUD/EndPanel/Margin/VBox/RetryButton
+@onready var hud_top: MarginContainer = $HUD/Top
+@onready var hamburger_button: HamburgerButton = $HUD/HamburgerButton
 @onready var virtual_joystick: Control = $HUD/VirtualJoystick
 @onready var level_up_ui: CanvasLayer = $LevelUpUI
 @onready var pause_menu: CanvasLayer = $PauseMenu
@@ -44,11 +46,15 @@ func _ready() -> void:
 	pause_menu.toggle_requested.connect(_on_pause_toggle)
 	pause_menu.retry_pressed.connect(_restart)
 	pause_menu.quit_pressed.connect(_quit_game)
+	hamburger_button.pressed.connect(_on_pause_toggle)
 	_on_health_changed(player.health, player.max_health)
 	_on_xp_changed(player.xp, player.xp_to_next, player.level)
 	kills_label.text = "Kills 0"
 	_update_time()
 	_update_hint()
+	_update_hamburger()
+	call_deferred("_update_hamburger")
+	get_viewport().size_changed.connect(_update_hamburger)
 
 
 func _configure_phone_content_scale() -> void:
@@ -126,6 +132,7 @@ func _try_show_level_up() -> void:
 	var choices := UpgradePool.build_choices(player.weapons)
 	level_up_ui.show_choices(choices)
 	get_tree().paused = true
+	_update_hamburger()
 
 
 func _on_choice_made(choice: Dictionary) -> void:
@@ -136,6 +143,7 @@ func _on_choice_made(choice: Dictionary) -> void:
 		_try_show_level_up()
 	elif not _menu_paused:
 		get_tree().paused = false
+	_update_hamburger()
 
 
 func register_kill() -> void:
@@ -170,11 +178,11 @@ func _on_boss_died() -> void:
 func _on_player_died() -> void:
 	if _won:
 		return
-	_end_run("You Died", "The gnolls overrun the Goldshire road.")
+	_end_run("You Died", "The skeletons overrun the Goldshire road.")
 
 
 func _on_pause_toggle() -> void:
-	if not _is_desktop_pause() or not running or _showing_level_up:
+	if not running or _showing_level_up:
 		return
 	if _menu_paused:
 		_resume_from_pause()
@@ -182,19 +190,17 @@ func _on_pause_toggle() -> void:
 		_pause_game()
 
 
-func _is_desktop_pause() -> bool:
-	return not OS.has_feature("mobile")
-
-
 func _pause_game() -> void:
 	_menu_paused = true
 	get_tree().paused = true
 	pause_menu.show_menu()
+	_update_hamburger()
 
 
 func _resume_from_pause() -> void:
 	_menu_paused = false
 	pause_menu.hide_menu()
+	_update_hamburger()
 	if _level_queue > 0 and running:
 		_try_show_level_up()
 	elif not _showing_level_up:
@@ -206,6 +212,19 @@ func _quit_game() -> void:
 	get_tree().quit()
 
 
+func _update_hamburger() -> void:
+	if hamburger_button == null:
+		return
+	var show := _is_touch_ui() and running and not _showing_level_up and not _menu_paused
+	hamburger_button.set_enabled(show)
+	if hud_top == null:
+		return
+	var left := 16
+	if show:
+		left = hamburger_button.occupied_left_margin()
+	hud_top.add_theme_constant_override("margin_left", left)
+
+
 func _end_run(title: String, flavor: String) -> void:
 	running = false
 	_menu_paused = false
@@ -214,6 +233,7 @@ func _end_run(title: String, flavor: String) -> void:
 	_level_queue = 0
 	level_up_ui.hide_ui()
 	pause_menu.hide_menu()
+	_update_hamburger()
 	if virtual_joystick != null:
 		virtual_joystick.visible = false
 	var retry_hint := "Tap Retry" if _is_touch_ui() else "Press Enter or Retry"

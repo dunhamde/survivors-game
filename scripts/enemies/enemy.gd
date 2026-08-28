@@ -4,6 +4,17 @@ extends CharacterBody2D
 signal died
 signal damaged(current: int, maximum: int)
 
+const SHEET_COLS := 5
+const SHEET_ROWS := 10
+const WALK_FRAMES := 5
+const DEATH_ROW := 9
+const DEATH_FRAMES := 5
+const WALK_FPS := 8.0
+const DEATH_FPS := 10.0
+const DEATH_HOLD := 0.15
+# Octants are E, SE, S, SW, W, NW, N, NE. Sheet rows are S, SE, E, NE, N, NW, W, SW.
+const DIR_ROWS := [2, 1, 0, 7, 6, 5, 4, 3]
+
 @export var data: EnemyData
 
 var max_health: int = 40
@@ -13,6 +24,12 @@ var contact_damage: int = 8
 var health: int
 var _player: Node2D
 var _flash: float = 0.0
+var _dir_row: int = 0
+var _walk_time: float = 0.0
+var _dying: bool = false
+var _death_time: float = 0.0
+var _death_finishing: bool = false
+var _uses_sheet: bool = false
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
@@ -33,10 +50,21 @@ func apply_data(p_data: EnemyData) -> void:
 	move_speed = p_data.move_speed
 	xp_value = p_data.xp_value
 	contact_damage = p_data.contact_damage
+	_uses_sheet = p_data.sheet_cols > 1
 	if sprite != null and p_data.texture != null:
 		sprite.texture = p_data.texture
 		sprite.centered = true
-		sprite.position = Vector2(0.0, -float(p_data.texture.get_height()) * 0.5)
+		if _uses_sheet:
+			sprite.hframes = p_data.sheet_cols
+			sprite.vframes = p_data.sheet_rows
+			var cell_h := float(p_data.texture.get_height()) / float(p_data.sheet_rows)
+			sprite.position = Vector2(0.0, -cell_h * 0.42)
+			_show_walk_frame(0)
+		else:
+			sprite.hframes = 1
+			sprite.vframes = 1
+			sprite.flip_h = false
+			sprite.position = Vector2(0.0, -float(p_data.texture.get_height()) * 0.5)
 	var circle := CircleShape2D.new()
 	circle.radius = p_data.collision_radius
 	collision.shape = circle
@@ -50,22 +78,70 @@ func health_ratio() -> float:
 
 
 func _physics_process(delta: float) -> void:
+	if _dying:
+		_update_flash(delta)
+		_animate_death(delta)
+		return
 	_update_flash(delta)
-	_chase()
+	_chase(delta)
 
 
-func _chase() -> void:
+func _chase(delta: float) -> void:
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player") as Node2D
 		return
 	if "alive" in _player and not _player.alive:
 		velocity = Vector2.ZERO
+		_animate_walk(delta, Vector2.ZERO)
 		return
 	var direction := global_position.direction_to(_player.global_position)
 	velocity = direction * move_speed
-	if sprite != null and absf(direction.x) > 0.1:
-		sprite.flip_h = direction.x < 0.0
 	move_and_slide()
+	_animate_walk(delta, direction)
+
+
+func _animate_walk(delta: float, direction: Vector2) -> void:
+	if not _uses_sheet:
+		if sprite != null and absf(direction.x) > 0.1:
+			sprite.flip_h = direction.x < 0.0
+		return
+	if direction.length() > 0.1:
+		_set_facing_from_vector(direction)
+		_walk_time += delta
+		_show_walk_frame(int(_walk_time * WALK_FPS) % WALK_FRAMES)
+	else:
+		_walk_time = 0.0
+		_show_walk_frame(0)
+
+
+func _animate_death(delta: float) -> void:
+	_death_time += delta
+	var death_frame := mini(int(_death_time * DEATH_FPS), DEATH_FRAMES - 1)
+	_show_frame(DEATH_ROW, death_frame)
+	if _death_finishing:
+		return
+	if _death_time >= (float(DEATH_FRAMES) / DEATH_FPS) + DEATH_HOLD:
+		_death_finishing = true
+		set_physics_process(false)
+		call_deferred("_finish_death")
+
+
+func _set_facing_from_vector(direction: Vector2) -> void:
+	if direction.length_squared() < 0.0001:
+		return
+	var octant := posmod(int(round(direction.angle() / (PI * 0.25))), 8)
+	_dir_row = DIR_ROWS[octant]
+
+
+func _show_walk_frame(walk_frame: int) -> void:
+	_show_frame(_dir_row, walk_frame)
+
+
+func _show_frame(row: int, col: int) -> void:
+	if sprite == null:
+		return
+	sprite.frame = row * SHEET_COLS + col
+	sprite.flip_h = false
 
 
 func _update_flash(delta: float) -> void:
@@ -86,13 +162,19 @@ func take_damage(amount: int) -> void:
 
 func _die() -> void:
 	died.emit()
-	set_physics_process(false)
 	velocity = Vector2.ZERO
+	remove_from_group("enemies")
 	if collision != null:
 		collision.set_deferred("disabled", true)
 	var run := get_tree().get_first_node_in_group("run")
 	if run != null and run.has_method("register_kill"):
 		run.register_kill()
+	if _uses_sheet:
+		_dying = true
+		_death_time = 0.0
+		_show_frame(DEATH_ROW, 0)
+		return
+	set_physics_process(false)
 	# Spawning an Area2D (XP mote) during body_entered / overlapping-body
 	# queries changes monitoring while the physics server is flushing.
 	call_deferred("_finish_death")

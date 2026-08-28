@@ -7,12 +7,16 @@ signal quit_pressed
 @onready var resume_button: Button = $Center/Panel/Margin/VBox/ResumeButton
 @onready var retry_button: Button = $Center/Panel/Margin/VBox/RetryButton
 @onready var quit_button: Button = $Center/Panel/Margin/VBox/QuitButton
+@onready var hint: Label = $Center/Panel/Margin/VBox/Hint
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	quit_button.visible = not OS.has_feature("web")
+	var touch := OS.has_feature("web") or DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
+	if touch:
+		hint.text = "Tap Resume to continue"
 	resume_button.pressed.connect(func() -> void: toggle_requested.emit())
 	retry_button.pressed.connect(func() -> void: retry_pressed.emit())
 	quit_button.pressed.connect(func() -> void: quit_pressed.emit())

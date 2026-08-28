@@ -61,6 +61,8 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed and not _active:
+			if _over_touch_blocker(touch.position):
+				return
 			_begin(touch.index, touch.position)
 			get_viewport().set_input_as_handled()
 		elif not touch.pressed and touch.index == _pointer_id:
@@ -74,6 +76,8 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		var mouse := event as InputEventMouseButton
 		if mouse.pressed and not _active:
+			if _over_touch_blocker(mouse.position):
+				return
 			_begin(-2, mouse.position)
 			get_viewport().set_input_as_handled()
 		elif not mouse.pressed and _pointer_id == -2:
@@ -82,6 +86,18 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion and _active and _pointer_id == -2:
 		_update((event as InputEventMouseMotion).position)
 		get_viewport().set_input_as_handled()
+
+
+func _over_touch_blocker(viewport_pos: Vector2) -> bool:
+	for node in get_tree().get_nodes_in_group("hud_touch_blockers"):
+		var control := node as Control
+		if control == null or not control.is_visible_in_tree():
+			continue
+		if control.mouse_filter == Control.MOUSE_FILTER_IGNORE:
+			continue
+		if control.get_global_rect().has_point(viewport_pos):
+			return true
+	return false
 
 
 func _begin(pointer_id: int, viewport_pos: Vector2) -> void:
