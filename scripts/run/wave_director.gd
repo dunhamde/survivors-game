@@ -100,7 +100,8 @@ func _spawn_pack(player: Node2D, data: EnemyData, count: int, cap: int) -> void:
 		var enemy := enemy_scene.instantiate() as Enemy
 		var angle := base_angle + randf_range(-0.22, 0.22)
 		var dist := spawn_radius + randf_range(-18.0, 24.0)
-		enemy.global_position = player.global_position + Vector2.from_angle(angle) * dist
+		var desired := player.global_position + Vector2.from_angle(angle) * dist
+		enemy.global_position = _snap_spawn(parent, desired)
 		parent.add_child(enemy)
 		enemy.apply_data(data)
 		enemy.health = enemy.max_health
@@ -116,13 +117,19 @@ func _spawn_hogger(player: Node2D) -> void:
 	if parent == null:
 		return
 	var hogger := hogger_scene.instantiate() as Enemy
-	hogger.global_position = player.global_position + Vector2.RIGHT * spawn_radius
+	hogger.global_position = _snap_spawn(parent, player.global_position + Vector2.RIGHT * spawn_radius)
 	parent.add_child(hogger)
 	hogger.apply_data(hogger_data)
 	hogger.health = hogger.max_health
 	if not hogger.died.is_connected(_on_enemy_died):
 		hogger.died.connect(_on_enemy_died)
 	boss_spawned.emit(hogger)
+
+
+func _snap_spawn(map: Node, desired: Vector2) -> Vector2:
+	if map != null and map.has_method("snap_to_walkable"):
+		return map.snap_to_walkable(desired)
+	return desired
 
 
 func _on_enemy_died() -> void:

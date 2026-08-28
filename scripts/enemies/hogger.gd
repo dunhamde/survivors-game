@@ -71,7 +71,10 @@ func _summon_minions() -> void:
 	for i in 2:
 		var minion := MINION_SCENE.instantiate() as Enemy
 		var offset := Vector2.from_angle(randf() * TAU) * 42.0
-		minion.global_position = global_position + offset
+		var desired := global_position + offset
+		if parent.has_method("snap_to_walkable"):
+			desired = parent.snap_to_walkable(desired)
+		minion.global_position = desired
 		parent.add_child(minion)
 		minion.apply_data(MINION_DATA)
 		minion.health = minion.max_health
