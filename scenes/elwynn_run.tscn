@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/run/run_controller.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/run/elwynn_map.gd" id="2"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://assets/tiles/elwynn/goldshire_silhouette.png" id="11"]
 [ext_resource type="Script" path="res://scripts/ui/level_up_ui.gd" id="12"]
 [ext_resource type="Script" path="res://scripts/virtual_joystick.gd" id="13"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="14"]
 
 [sub_resource type="StyleBoxFlat" id="PanelGold"]
 bg_color = Color(0.12, 0.08, 0.04, 0.92)
@@ -189,7 +190,7 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.85, 0.8, 0.65, 0.75)
 theme_override_font_sizes/font_size = 14
-text = "WASD / Arrows to move · Auto-attack · Survive until Hogger"
+text = "WASD / Arrows to move · Auto-attack · Esc to pause · Survive until Hogger"
 horizontal_alignment = 1
 
 [node name="VirtualJoystick" type="Control" parent="HUD"]
@@ -273,6 +274,77 @@ custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Retry"
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+process_mode = 3
+layer = 15
+visible = false
+script = ExtResource("14")
+
+[node name="Dim" type="ColorRect" parent="PauseMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="PauseMenu"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="PauseMenu/Center"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("PanelGold")
+
+[node name="Margin" type="MarginContainer" parent="PauseMenu/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="PauseMenu/Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="PauseMenu/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 28
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Resume"
+
+[node name="RetryButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Retry"
+
+[node name="QuitButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Quit"
+
+[node name="Hint" type="Label" parent="PauseMenu/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Press Escape to resume"
+horizontal_alignment = 1
 
 [node name="LevelUpUI" type="CanvasLayer" parent="."]
 process_mode = 3
