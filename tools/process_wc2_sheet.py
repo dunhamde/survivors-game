@@ -1,7 +1,9 @@
 """Pack Warcraft II grunt/ogre sheets into regular 5x11 atlases.
 
 Layout matches the paladin: columns are N, NE, E, SE, S; rows are walk (0-4),
-attack (5-8), then death (9-10). West facings are mirrored in-game.
+attack (5-8), then death (9-10). Ogre death is two interleaved 3-frame clips,
+not a linear wrap: NE is (4,9)/(1,10)/(3,10), SE is (0,10)/(2,10)/(4,10).
+West facings are mirrored in-game.
 
 Run: python tools/process_wc2_sheet.py
 """

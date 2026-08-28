@@ -15,3 +15,7 @@ extends Resource
 @export var walk_frames: int = 5
 @export var death_row: int = 9
 @export var death_frames: int = 5
+## Explicit death frames as (column, row). Empty uses linear frames from death_row.
+@export var death_cells: Array[Vector2i] = []
+## South/SE death clip. Used when facing E/SE/S if non-empty; otherwise death_cells.
+@export var death_cells_south: Array[Vector2i] = []

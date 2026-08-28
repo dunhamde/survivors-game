@@ -32,6 +32,9 @@ var _cols_are_dirs: bool = false
 var _walk_frames: int = 5
 var _death_row: int = 9
 var _death_frames: int = 5
+var _death_cells: Array[Vector2i] = []
+var _death_cells_south: Array[Vector2i] = []
+var _active_death_cells: Array[Vector2i] = []
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
@@ -58,6 +61,8 @@ func apply_data(p_data: EnemyData) -> void:
 	_walk_frames = maxi(1, p_data.walk_frames)
 	_death_row = p_data.death_row
 	_death_frames = maxi(1, p_data.death_frames)
+	_death_cells = p_data.death_cells.duplicate()
+	_death_cells_south = p_data.death_cells_south.duplicate()
 	if sprite != null and p_data.texture != null:
 		sprite.texture = p_data.texture
 		sprite.centered = true
@@ -124,16 +129,31 @@ func _animate_walk(delta: float, direction: Vector2) -> void:
 func _animate_death(delta: float) -> void:
 	_death_time += delta
 	var death_frame := mini(int(_death_time * DEATH_FPS), _death_frames - 1)
-	if _cols_are_dirs:
-		_show_frame(_death_row + int(death_frame / _sheet_cols), death_frame % _sheet_cols, false)
-	else:
-		_show_frame(_death_row, death_frame, false)
+	_show_death_frame(death_frame)
 	if _death_finishing:
 		return
 	if _death_time >= (float(_death_frames) / DEATH_FPS) + DEATH_HOLD:
 		_death_finishing = true
 		set_physics_process(false)
 		call_deferred("_finish_death")
+
+
+func _pick_death_cells() -> Array[Vector2i]:
+	# North/NE uses the up-right clip; E/SE/S uses the down-right clip when present.
+	if _death_cells_south.size() > 0 and _dir_col >= 2:
+		return _death_cells_south
+	return _death_cells
+
+
+func _show_death_frame(death_frame: int) -> void:
+	if _active_death_cells.size() > 0:
+		var cell := _active_death_cells[clampi(death_frame, 0, _active_death_cells.size() - 1)]
+		_show_frame(cell.y, cell.x, _dir_flip)
+		return
+	if _cols_are_dirs:
+		_show_frame(_death_row + int(death_frame / _sheet_cols), death_frame % _sheet_cols, _dir_flip)
+	else:
+		_show_frame(_death_row, death_frame, false)
 
 
 func _set_facing_from_vector(direction: Vector2) -> void:
@@ -215,7 +235,10 @@ func _die() -> void:
 	if _uses_sheet:
 		_dying = true
 		_death_time = 0.0
-		_show_frame(_death_row, 0, false)
+		_active_death_cells = _pick_death_cells()
+		if _active_death_cells.size() > 0:
+			_death_frames = _active_death_cells.size()
+		_show_death_frame(0)
 		return
 	set_physics_process(false)
 	# Spawning an Area2D (XP mote) during body_entered / overlapping-body
