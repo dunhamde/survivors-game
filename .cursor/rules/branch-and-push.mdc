@@ -1,0 +1,24 @@
+---
+description: Create a feature branch, commit, and push it — never push to master until the user has tested
+alwaysApply: true
+---
+
+# Feature-branch workflow
+
+When the user asks for code or project changes in this repo, do not work on `master` (or `main`). This repo opts in to commit-and-push on feature branches without a separate "please commit" request.
+
+## Before editing
+1. If HEAD is `master`/`main`, create and check out a new branch named `cursor/<short-kebab-description>`.
+2. If already on a feature branch that matches this request, keep using it.
+3. Call SetActiveBranch after creating or switching branches.
+4. Stage only files from this request. Leave unrelated dirty files (and secrets) unstaged.
+
+## After the change is done
+1. Commit the relevant files with a concise message focused on why.
+2. Push the feature branch: `git push -u origin HEAD`.
+3. Tell the user the branch name and that it is ready to test. Do not open a PR unless they ask.
+
+## Never
+- Do not `git push` to `master` or `main`.
+- Do not merge into `master`/`main` until the user says they have tested and want it merged.
+- Do not force-push, skip hooks, or amend unless the user explicitly asks.
