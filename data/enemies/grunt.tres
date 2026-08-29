@@ -21,3 +21,5 @@ death_row = 9
 death_frames = 2
 death_cells = Array[Vector2i]([Vector2i(3, 9), Vector2i(0, 10)])
 death_cells_south = Array[Vector2i]([Vector2i(2, 9), Vector2i(4, 9)])
+hit_cells = Array[Vector2i]([Vector2i(0, 9)])
+hit_cells_south = Array[Vector2i]([Vector2i(1, 9)])
