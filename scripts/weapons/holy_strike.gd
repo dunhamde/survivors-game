@@ -1,6 +1,6 @@
 extends WeaponBase
 
-const SLASH_SCENE := preload("res://scenes/weapons/holy_slash.tscn")
+const BOLT_SCENE := preload("res://scenes/weapons/holy_shock_bolt.tscn")
 
 
 func _physics_process(delta: float) -> void:
@@ -32,12 +32,26 @@ func _nearest_in_range() -> Node2D:
 
 
 func _fire(target: Node2D) -> void:
-	var slash := SLASH_SCENE.instantiate() as Area2D
-	var direction := global_position.direction_to(target.global_position)
+	var from := _body_point(player)
+	var to := _body_point(target)
+	var direction := from.direction_to(to)
+	if direction == Vector2.ZERO:
+		direction = Vector2.RIGHT
 	if player.has_method("play_attack"):
 		player.play_attack(direction)
-	slash.global_position = global_position + direction * 28.0
-	slash.rotation = direction.angle()
-	slash.damage = current_damage()
-	slash.scale = Vector2.ONE * (current_area() / 80.0)
-	entities().add_child(slash)
+	from += direction * 12.0
+	var bolt := BOLT_SCENE.instantiate()
+	bolt.global_position = from
+	bolt.end_global = to
+	bolt.damage = current_damage()
+	bolt.victim = target
+	entities().add_child(bolt)
+
+
+func _body_point(node: Node2D) -> Vector2:
+	if node == null or not is_instance_valid(node):
+		return global_position
+	var sprite := node.get_node_or_null("Sprite2D") as Sprite2D
+	if sprite != null:
+		return sprite.global_position
+	return node.global_position

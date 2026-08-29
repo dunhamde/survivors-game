@@ -6,11 +6,11 @@
 [resource]
 script = ExtResource("1")
 id = &"holy_strike"
-display_name = "Holy Strike"
-description = "A blessed swing at the nearest foe."
+display_name = "Holy Shock"
+description = "Holy lightning leaps to the nearest foe."
 scene = ExtResource("2")
 max_level = 5
-upgrade_hint = "+Damage, +Range, faster swings"
+upgrade_hint = "+Damage, +Range, faster shocks"
 base_damage = 18.0
 damage_per_level = 6.0
 base_cooldown = 0.55
