@@ -100,10 +100,11 @@ func take_damage(amount: int) -> void:
 	if DevCheats.god_mode:
 		amount = health
 	health = maxi(0, health - amount)
-	_anim.trigger_enemy_flash()
 	damaged.emit(health, max_health)
 	if health <= 0:
 		_die()
+	else:
+		_anim.trigger_hit()
 
 
 func _die() -> void:

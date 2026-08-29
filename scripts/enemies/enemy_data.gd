@@ -20,3 +20,7 @@ extends Resource
 @export var death_cells: Array[Vector2i] = []
 ## South/SE death clip. Used when facing E/SE/S if non-empty; otherwise death_cells.
 @export var death_cells_south: Array[Vector2i] = []
+## Hit-react frames as (column, row). Empty keeps the red flash. Prepended to death.
+@export var hit_cells: Array[Vector2i] = []
+## South/SE hit pose. Used when facing E/SE/S if non-empty; otherwise hit_cells.
+@export var hit_cells_south: Array[Vector2i] = []
