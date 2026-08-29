@@ -20,6 +20,7 @@ var _anim: SheetAnimator
 var _char_index: int = 0
 var _data_path: String = ""
 var _zoom: int = 4
+var _speed: float = 1.0
 var _octant: int = 2
 
 var _viewport: SubViewport
@@ -30,6 +31,8 @@ var _ground: ColorRect
 var _hud: Label
 var _char_option: OptionButton
 var _zoom_option: OptionButton
+var _speed_slider: HSlider
+var _speed_label: Label
 var _attack_btn: Button
 var _play_btn: Button
 var _loop_btn: CheckBox
@@ -47,7 +50,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not is_visible_in_tree() or _anim == null:
 		return
-	_anim.tick_preview(delta)
+	_anim.tick_preview(delta * _speed)
 	_update_hud()
 	_layout_world()
 
@@ -150,6 +153,25 @@ func _build_ui() -> void:
 	_zoom_option.select(ZOOM_LEVELS.find(_zoom))
 	_zoom_option.item_selected.connect(_on_zoom_selected)
 	ctrl.add_child(_zoom_option)
+
+	ctrl.add_child(_make_label("Speed"))
+	var speed_row := HBoxContainer.new()
+	speed_row.add_theme_constant_override("separation", 8)
+	ctrl.add_child(speed_row)
+	_speed_slider = HSlider.new()
+	_speed_slider.min_value = 0.1
+	_speed_slider.max_value = 1.0
+	_speed_slider.step = 0.05
+	_speed_slider.value = _speed
+	_speed_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_speed_slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_speed_slider.custom_minimum_size = Vector2(80, 16)
+	_speed_slider.value_changed.connect(_on_speed_changed)
+	speed_row.add_child(_speed_slider)
+	_speed_label = Label.new()
+	_speed_label.custom_minimum_size = Vector2(44, 0)
+	_speed_label.text = _speed_text()
+	speed_row.add_child(_speed_label)
 
 	ctrl.add_child(_make_label("Direction"))
 	var dir_grid := GridContainer.new()
@@ -302,6 +324,17 @@ func _on_zoom_selected(index: int) -> void:
 	_layout_world()
 
 
+func _on_speed_changed(value: float) -> void:
+	_speed = value
+	if _speed_label != null:
+		_speed_label.text = _speed_text()
+	_update_hud()
+
+
+func _speed_text() -> String:
+	return "%.2fx" % _speed
+
+
 func _sync_dir_buttons() -> void:
 	for octant in _dir_buttons:
 		var btn: Button = _dir_buttons[octant]
@@ -328,4 +361,4 @@ func _layout_world() -> void:
 func _update_hud() -> void:
 	if _hud == null or _anim == null:
 		return
-	_hud.text = _anim.debug_line()
+	_hud.text = "%s  %s" % [_anim.debug_line(), _speed_text()]
