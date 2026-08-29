@@ -120,11 +120,23 @@ func _test_grunt() -> void:
 	print("grunt")
 	var data := load("res://data/enemies/grunt.tres") as EnemyData
 	var anim := SheetAnimator.from_enemy_data(data)
-	_ok(anim.cols_are_dirs and anim.death_frames == 6 and anim.death_uses_flip, "grunt death 6")
-	anim.set_facing_from_vector(Vector2.LEFT)
+	_ok(anim.cols_are_dirs and anim.death_uses_flip, "cols-are-dirs death flips")
+	_ok(anim.death_cells.size() == 2 and anim.death_cells_south.size() == 2, "two death clips")
+	anim.set_facing_from_vector(Vector2.UP)
+	_ok(anim.dir_col == 0, "N col 0 uses north clip")
 	anim.start_death()
-	anim.show_death_frame(5)
-	_ok(anim.last_row == 10 and anim.last_col == 0, "death frame 5 -> row10 col0")
+	_ok(anim.playback_death_frames == 2, "clip length 2")
+	anim.show_death_frame(0)
+	_ok(anim.last_col == 3 and anim.last_row == 9, "north clip cell 0 (3,9)")
+	anim.show_death_frame(1)
+	_ok(anim.last_col == 0 and anim.last_row == 10, "north clip cell 1 (0,10)")
+	anim.set_facing_from_vector(Vector2.DOWN)
+	_ok(anim.dir_col == 4, "S col 4 uses south clip")
+	anim.start_death()
+	anim.show_death_frame(0)
+	_ok(anim.last_col == 2 and anim.last_row == 9, "south clip cell 0 (2,9)")
+	anim.show_death_frame(1)
+	_ok(anim.last_col == 4 and anim.last_row == 9, "south clip cell 1 (4,9)")
 
 
 func _test_hogger() -> void:
