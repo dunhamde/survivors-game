@@ -14,7 +14,7 @@ const DEATH_FPS := 10.0
 const PLAYER_DEATH_HOLD := 0.4
 const ENEMY_DEATH_HOLD := 0.15
 const PLAYER_INVULN_TIME := 0.55
-const ENEMY_FLASH_TIME := 0.08
+const ENEMY_FLASH_TIME := 0.2
 const PLAYER_SPRITE_POS := Vector2(0.0, -30.0)
 const PLAYER_TEXTURE_PATH := "res://assets/sprites/player/paladin.png"
 # Octants are E, SE, S, SW, W, NW, N, NE. Skeleton rows are S, SE, E, NE, N, NW, W, SW.
