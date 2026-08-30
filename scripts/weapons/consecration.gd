@@ -5,7 +5,7 @@ extends WeaponBase
 const GROUND_SHADER := preload("res://shaders/consecration_ground.gdshader")
 const WAVE_SHADER := preload("res://shaders/consecration_wave.gdshader")
 
-const TEX_SIZE := 256
+const TEX_SIZE := 64
 const WAVE_TEX := 8
 const CIRCLE_UV := 0.42
 const WAVE_DURATION := 0.46
@@ -133,7 +133,7 @@ func _build_fx() -> void:
 	_fx.z_as_relative = true
 	_fx.z_index = FX_Z
 	_fx.y_sort_enabled = false
-	_fx.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_fx.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 	_ground_mat = ShaderMaterial.new()
 	_ground_mat.shader = GROUND_SHADER
@@ -141,7 +141,7 @@ func _build_fx() -> void:
 	_ground.name = "Ground"
 	_ground.texture = _pack
 	_ground.material = _ground_mat
-	_ground.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_ground.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_fx.add_child(_ground)
 
 	_wave_mat = ShaderMaterial.new()
@@ -197,16 +197,34 @@ static func _make_pack() -> Image:
 	for y in size:
 		for x in size:
 			var idx := y * size + x
-			var uv_r := Vector2(float(x), float(y)).distance_to(center) * inv
-			var edge_n := (_value_noise(Vector2(float(x), float(y)) * 0.035, 19) - 0.5) * 0.028
+			var px := Vector2(float(x), float(y))
+			var uv_r := px.distance_to(center) * inv
+			var ang := atan2(px.y - center.y, px.x - center.x)
+			var edge_n := (_value_noise(px * 0.1, 19) - 0.5) * 0.1
+			edge_n += sin(ang * 2.0 + _value_noise(px * 0.06, 5) * 5.0) * 0.045
 			var limit := CIRCLE_UV + edge_n
-			var cover := 1.0 - _smoothstep(limit - 0.02, limit, uv_r)
-			if cover < 0.01 and heat[idx] < 0.01:
+			var radial := 1.0 - _smoothstep(limit * 0.32, limit, uv_r)
+			var blotch := _value_noise(px * 0.08, 41)
+			if blotch < 0.48:
+				blotch = 0.0
+			else:
+				blotch = (blotch - 0.48) * 1.6
+			var earth_amt := maxf(heat[idx] * 1.25, blotch * 0.75)
+			var cover := clampf(earth_amt * radial, 0.0, 1.0)
+			if cover < 0.04 and heat[idx] < 0.12:
 				img.set_pixel(x, y, Color(0, 0, 0, 0))
 				continue
-			var h := clampf(heat[idx], 0.0, 1.0)
-			var a := clampf(ash[idx] * (1.0 - h * 0.4), 0.0, 1.0)
-			var p := clampf(pool[idx], 0.0, 1.0)
+			var h := 0.0
+			if heat[idx] > 0.55:
+				h = 1.0
+			elif heat[idx] > 0.22:
+				h = 0.55
+			var a := 0.0
+			if ash[idx] > 0.66:
+				a = 1.0
+			elif ash[idx] > 0.33:
+				a = 0.5
+			var p := 1.0 if pool[idx] > 0.4 else 0.0
 			img.set_pixel(x, y, Color(h, a, p, cover))
 	return img
 
@@ -219,79 +237,48 @@ static func _stamp_cracks(
 		radius: float,
 		rng: RandomNumberGenerator
 ) -> void:
-	_stamp_blob(pool, size, center, 10.0, 1.0)
-	_stamp_blob(heat, size, center, 8.0, 0.9)
-	_stamp_blob(heat, size, center, 14.0, 0.35)
-	for cross in 3:
+	_stamp_blob(pool, size, center, 2.6, 1.0)
+	_stamp_blob(heat, size, center, 2.2, 1.0)
+	_stamp_blob(heat, size, center, 3.4, 0.4)
+	for _cross in 2:
 		var ang := rng.randf() * TAU
-		var half := radius * rng.randf_range(0.18, 0.34)
+		var half := radius * rng.randf_range(0.16, 0.28)
 		var path := _crack_path(
 			center + Vector2.from_angle(ang) * -half,
 			center + Vector2.from_angle(ang) * half,
 			rng,
-			4
+			2
 		)
-		_stamp_path(heat, size, path, 2.2, 0.9)
-		_stamp_path(heat, size, path, 5.4, 0.32)
+		_stamp_path(heat, size, path, 1.15, 0.95)
 
-	var major := 9
+	var major := 6
 	for i in major:
-		var ang := TAU * float(i) / float(major) + rng.randf_range(-0.18, 0.18)
-		var inner := rng.randf_range(0.05, 0.16) * radius
-		var outer := rng.randf_range(0.84, 0.98) * radius
+		var ang := TAU * float(i) / float(major) + rng.randf_range(-0.28, 0.28)
+		var inner := rng.randf_range(0.04, 0.14) * radius
+		var outer := rng.randf_range(0.62, 0.88) * radius
 		var path := _crack_path(
 			center + Vector2.from_angle(ang) * inner,
 			center + Vector2.from_angle(ang) * outer,
 			rng,
-			5
+			3
 		)
-		_stamp_path(heat, size, path, 2.6, 1.0)
-		_stamp_path(heat, size, path, 6.2, 0.42)
-		_maybe_pools(pool, heat, size, path, rng, 0.45)
-		if path.size() < 6:
+		_stamp_path(heat, size, path, 1.2, 1.0)
+		_stamp_path(heat, size, path, 2.1, 0.4)
+		_maybe_pools(pool, heat, size, path, rng, 0.4)
+		if path.size() < 4:
 			continue
-		var branch_at := rng.randi_range(int(path.size() * 0.28), int(path.size() * 0.72))
+		var branch_at := rng.randi_range(int(path.size() * 0.3), int(path.size() * 0.7))
 		var origin: Vector2 = path[branch_at]
 		var tangent := (path[mini(branch_at + 1, path.size() - 1)] - path[maxi(branch_at - 1, 0)]).normalized()
 		if tangent == Vector2.ZERO:
 			tangent = Vector2.from_angle(ang)
 		var side := -1.0 if rng.randf() < 0.5 else 1.0
-		var blen := radius * rng.randf_range(0.22, 0.42)
-		var dest := origin + tangent.rotated(side * deg_to_rad(rng.randf_range(28.0, 68.0))) * blen
-		if dest.distance_to(center) > radius * 0.98:
-			dest = center + (dest - center).normalized() * radius * 0.96
-		var branch := _crack_path(origin, dest, rng, 4)
-		_stamp_path(heat, size, branch, 2.1, 0.88)
-		_stamp_path(heat, size, branch, 5.0, 0.34)
-
-	for j in 6:
-		var ang := rng.randf() * TAU
-		var inner := rng.randf_range(0.12, 0.28) * radius
-		var outer := rng.randf_range(0.55, 0.8) * radius
-		var path := _crack_path(
-			center + Vector2.from_angle(ang) * inner,
-			center + Vector2.from_angle(ang) * outer,
-			rng,
-			4
-		)
-		_stamp_path(heat, size, path, 1.8, 0.72)
-		_stamp_path(heat, size, path, 4.4, 0.28)
-
-	var ring_fracs: Array[float] = [0.28, 0.52, 0.76]
-	for ring_i in 3:
-		var ring_r: float = radius * ring_fracs[ring_i]
-		var count := 5 + ring_i * 2
-		var pts: Array[Vector2] = []
-		for k in count:
-			var ang := TAU * float(k) / float(count) + rng.randf_range(-0.12, 0.12)
-			pts.append(center + Vector2.from_angle(ang) * (ring_r + rng.randf_range(-6.0, 6.0)))
-		for k in count:
-			if rng.randf() < 0.28:
-				continue
-			var path := _crack_path(pts[k], pts[(k + 1) % count], rng, 3)
-			_stamp_path(heat, size, path, 1.7, 0.62)
-			_stamp_path(heat, size, path, 4.2, 0.24)
-			_maybe_pools(pool, heat, size, path, rng, 0.22)
+		var blen := radius * rng.randf_range(0.18, 0.34)
+		var dest := origin + tangent.rotated(side * deg_to_rad(rng.randf_range(32.0, 70.0))) * blen
+		if dest.distance_to(center) > radius * 0.9:
+			dest = center + (dest - center).normalized() * radius * 0.86
+		var branch := _crack_path(origin, dest, rng, 2)
+		_stamp_path(heat, size, branch, 1.05, 0.85)
 
 
 static func _maybe_pools(
@@ -305,15 +292,15 @@ static func _maybe_pools(
 	if path.size() < 3 or rng.randf() > chance:
 		return
 	var at: Vector2 = path[rng.randi_range(1, path.size() - 2)]
-	var rad := rng.randf_range(4.5, 8.5)
+	var rad := rng.randf_range(1.6, 2.6)
 	_stamp_blob(pool, size, at, rad, 0.95)
-	_stamp_blob(heat, size, at, rad * 0.7, 0.8)
+	_stamp_blob(heat, size, at, rad * 0.75, 0.8)
 
 
 static func _crack_path(from: Vector2, to: Vector2, rng: RandomNumberGenerator, generations: int) -> PackedVector2Array:
 	var pts: Array[Vector2] = [from, to]
-	var amplitude := clampf(from.distance_to(to) * 0.2, 3.0, 18.0)
-	generations = maxi(generations, 3)
+	var amplitude := clampf(from.distance_to(to) * 0.22, 1.4, 6.0)
+	generations = maxi(generations, 2)
 	for _g in generations:
 		var next: Array[Vector2] = []
 		for i in range(pts.size() - 1):
@@ -369,8 +356,8 @@ static func _fill_ash(ash: Array, size: int, rng: RandomNumberGenerator) -> void
 	var oy := rng.randf() * 40.0
 	for y in size:
 		for x in size:
-			var n := _value_noise(Vector2(float(x) + ox, float(y) + oy) * 0.045, 7)
-			n = n * 0.65 + _value_noise(Vector2(float(x) + ox, float(y) + oy) * 0.11, 23) * 0.35
+			var n := _value_noise(Vector2(float(x) + ox, float(y) + oy) * 0.09, 7)
+			n = n * 0.75 + _value_noise(Vector2(float(x) + ox, float(y) + oy) * 0.18, 23) * 0.25
 			ash[y * size + x] = n
 
 
