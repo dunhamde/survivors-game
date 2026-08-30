@@ -351,6 +351,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Retry"
 
+[node name="DamageNumbers" type="CheckBox" parent="PauseMenu/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+button_pressed = true
+text = "Damage Numbers"
+
 [node name="DevButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2

@@ -40,6 +40,7 @@ func take_damage(amount: int) -> void:
 	if _opening or health <= 0 or amount <= 0:
 		return
 	health = 0
+	DamageNumber.spawn(self, amount)
 	_opening = true
 	remove_from_group("chests")
 	if collision != null:
