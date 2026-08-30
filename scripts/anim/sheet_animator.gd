@@ -11,7 +11,7 @@ enum HitStyle { NONE, PLAYER_FLICKER, ENEMY_FLASH }
 const WALK_FPS := 8.0
 const ATTACK_FPS := 12.0
 const DEATH_FPS := 10.0
-const HIT_HOLD := 0.12
+const HIT_HOLD := 0.25
 const PLAYER_DEATH_HOLD := 0.4
 const ENEMY_DEATH_HOLD := 0.15
 const PLAYER_INVULN_TIME := 0.55
@@ -44,6 +44,7 @@ var attack_row: int = -1
 var attack_frames: int = 0
 var death_row: int = 9
 var death_frames: int = 5
+var hit_row: int = -1
 var death_hold: float = ENEMY_DEATH_HOLD
 var death_uses_flip: bool = false
 var death_cells: Array[Vector2i] = []
@@ -108,6 +109,7 @@ static func from_enemy_data(data: EnemyData) -> SheetAnimator:
 	anim.attack_frames = 0
 	anim.death_row = data.death_row
 	anim.death_frames = maxi(1, data.death_frames)
+	anim.hit_row = data.hit_row
 	anim.death_hold = ENEMY_DEATH_HOLD
 	anim.death_uses_flip = anim.cols_are_dirs
 	anim.death_cells = data.death_cells.duplicate()
@@ -279,14 +281,19 @@ func show_death_frame(death_frame: int) -> void:
 
 
 func has_hit_pose() -> bool:
-	return hit_cells.size() > 0 or hit_cells_south.size() > 0
+	return hit_row >= 0 or hit_cells.size() > 0 or hit_cells_south.size() > 0
 
 
 func show_hit_frame(hit_frame: int) -> void:
-	if not uses_sheet or active_hit_cells.size() == 0:
+	if not uses_sheet:
+		return
+	var flip := dir_flip if death_uses_flip else false
+	if hit_row >= 0 and cols_are_dirs:
+		show_frame(hit_row, dir_col, flip)
+		return
+	if active_hit_cells.size() == 0:
 		return
 	var cell: Vector2i = active_hit_cells[clampi(hit_frame, 0, active_hit_cells.size() - 1)]
-	var flip := dir_flip if death_uses_flip else false
 	show_frame(cell.y, cell.x, flip)
 
 
@@ -503,6 +510,8 @@ func _pick_death_cells() -> Array[Vector2i]:
 
 
 func _pick_hit_cells() -> Array[Vector2i]:
+	if hit_row >= 0 and cols_are_dirs:
+		return [Vector2i(dir_col, hit_row)]
 	return _pick_facing_cells(hit_cells, hit_cells_south)
 
 
