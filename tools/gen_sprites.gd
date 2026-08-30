@@ -197,6 +197,59 @@ func _gen_fx() -> void:
 	_px(mote, 6, 4, GOLD_L)
 	_save(mote, "res://assets/sprites/fx/xp_mote.png")
 
+	var heart := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	heart.fill(Color(0, 0, 0, 0))
+	var red := Color("c42028")
+	var red_d := Color("8c1218")
+	var red_l := Color("e84850")
+	for p in [
+		Vector2i(3, 4), Vector2i(4, 4), Vector2i(5, 4), Vector2i(6, 4),
+		Vector2i(9, 4), Vector2i(10, 4), Vector2i(11, 4), Vector2i(12, 4),
+		Vector2i(2, 5), Vector2i(3, 5), Vector2i(4, 5), Vector2i(5, 5), Vector2i(6, 5), Vector2i(7, 5),
+		Vector2i(8, 5), Vector2i(9, 5), Vector2i(10, 5), Vector2i(11, 5), Vector2i(12, 5), Vector2i(13, 5),
+		Vector2i(2, 6), Vector2i(3, 6), Vector2i(4, 6), Vector2i(5, 6), Vector2i(6, 6), Vector2i(7, 6),
+		Vector2i(8, 6), Vector2i(9, 6), Vector2i(10, 6), Vector2i(11, 6), Vector2i(12, 6), Vector2i(13, 6),
+		Vector2i(2, 7), Vector2i(3, 7), Vector2i(4, 7), Vector2i(5, 7), Vector2i(6, 7), Vector2i(7, 7),
+		Vector2i(8, 7), Vector2i(9, 7), Vector2i(10, 7), Vector2i(11, 7), Vector2i(12, 7), Vector2i(13, 7),
+		Vector2i(3, 8), Vector2i(4, 8), Vector2i(5, 8), Vector2i(6, 8), Vector2i(7, 8),
+		Vector2i(8, 8), Vector2i(9, 8), Vector2i(10, 8), Vector2i(11, 8), Vector2i(12, 8),
+		Vector2i(4, 9), Vector2i(5, 9), Vector2i(6, 9), Vector2i(7, 9), Vector2i(8, 9), Vector2i(9, 9), Vector2i(10, 9), Vector2i(11, 9),
+		Vector2i(5, 10), Vector2i(6, 10), Vector2i(7, 10), Vector2i(8, 10), Vector2i(9, 10), Vector2i(10, 10),
+		Vector2i(6, 11), Vector2i(7, 11), Vector2i(8, 11), Vector2i(9, 11),
+		Vector2i(7, 12), Vector2i(8, 12),
+	]:
+		_px(heart, p.x, p.y, red)
+	_px(heart, 3, 4, red_d)
+	_px(heart, 6, 4, red_d)
+	_px(heart, 9, 4, red_d)
+	_px(heart, 12, 4, red_d)
+	_px(heart, 2, 5, red_d)
+	_px(heart, 7, 5, red_d)
+	_px(heart, 8, 5, red_d)
+	_px(heart, 13, 5, red_d)
+	_px(heart, 4, 5, red_l)
+	_px(heart, 3, 6, red_l)
+	_px(heart, 4, 6, WHITE)
+	_px(heart, 5, 6, red_l)
+	_save(heart, "res://assets/sprites/fx/heart.png")
+
+	var gold := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	gold.fill(Color(0, 0, 0, 0))
+	_rect(gold, 4, 13, 8, 1, BLACK)
+	_rect(gold, 3, 11, 10, 2, GOLD)
+	_rect(gold, 4, 10, 8, 1, GOLD)
+	_rect(gold, 5, 8, 6, 2, GOLD)
+	_rect(gold, 6, 6, 4, 2, GOLD)
+	_rect(gold, 7, 4, 2, 2, GOLD_L)
+	_px(gold, 4, 11, WHITE)
+	_px(gold, 7, 11, WHITE)
+	_px(gold, 11, 11, WHITE)
+	_px(gold, 6, 9, WHITE)
+	_px(gold, 8, 8, WHITE)
+	_px(gold, 7, 6, WHITE)
+	_px(gold, 8, 4, WHITE)
+	_save(gold, "res://assets/sprites/fx/gold_pile.png")
+
 
 func _gen_props() -> void:
 	# Trees / lantern / Goldshire are produced by tools/gen_elwynn_tiles.py via _gen_tiles().

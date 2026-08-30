@@ -59,7 +59,7 @@ func _process(delta: float) -> void:
 func _apply_hit() -> void:
 	if not is_instance_valid(victim):
 		return
-	if victim.is_in_group("enemies") and victim.has_method("take_damage"):
+	if Hittable.is_target(victim):
 		victim.take_damage(damage)
 
 

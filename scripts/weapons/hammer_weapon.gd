@@ -18,7 +18,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _pick_targets(count: int) -> Array[Node2D]:
-	var enemies: Array = get_tree().get_nodes_in_group("enemies")
+	var enemies: Array = Hittable.all_nodes(get_tree())
 	if enemies.is_empty():
 		return []
 	enemies.sort_custom(func(a: Node, b: Node) -> bool:
