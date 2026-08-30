@@ -11,7 +11,6 @@ enum HitStyle { NONE, PLAYER_FLICKER, ENEMY_FLASH }
 const WALK_FPS := 8.0
 const ATTACK_FPS := 12.0
 const DEATH_FPS := 10.0
-const HIT_HOLD := 0.25
 const PLAYER_DEATH_HOLD := 0.4
 const ENEMY_DEATH_HOLD := 0.15
 const PLAYER_INVULN_TIME := 0.55
@@ -49,8 +48,6 @@ var death_hold: float = ENEMY_DEATH_HOLD
 var death_uses_flip: bool = false
 var death_cells: Array[Vector2i] = []
 var death_cells_south: Array[Vector2i] = []
-var hit_cells: Array[Vector2i] = []
-var hit_cells_south: Array[Vector2i] = []
 var sprite_pos: Vector2 = Vector2.ZERO
 var hit_style: HitStyle = HitStyle.NONE
 var hit_duration: float = 0.0
@@ -62,15 +59,12 @@ var last_row: int = 0
 var last_col: int = 0
 
 var attacking: bool = false
-var hitting: bool = false
 var walk_time: float = 0.0
 var attack_time: float = 0.0
 var death_time: float = 0.0
-var hit_time: float = 0.0
 var flash_remaining: float = 0.0
 var flicker_remaining: float = 0.0
 var active_death_cells: Array[Vector2i] = []
-var active_hit_cells: Array[Vector2i] = []
 var playback_death_frames: int = 5
 
 var preview_state: State = State.IDLE
@@ -114,8 +108,6 @@ static func from_enemy_data(data: EnemyData) -> SheetAnimator:
 	anim.death_uses_flip = anim.cols_are_dirs
 	anim.death_cells = data.death_cells.duplicate()
 	anim.death_cells_south = data.death_cells_south.duplicate()
-	anim.hit_cells = data.hit_cells.duplicate()
-	anim.hit_cells_south = data.hit_cells_south.duplicate()
 	anim.hit_style = HitStyle.ENEMY_FLASH
 	anim.hit_duration = ENEMY_FLASH_TIME
 	anim.texture = data.texture
@@ -200,8 +192,6 @@ func set_facing_octant(octant: int) -> void:
 
 
 func tick_alive(delta: float, input_vector: Vector2) -> void:
-	if tick_hit_reaction(delta):
-		return
 	if attacking:
 		attack_time += delta
 		var attack_frame := int(attack_time * ATTACK_FPS)
@@ -238,11 +228,9 @@ func start_attack() -> void:
 
 func start_death() -> void:
 	attacking = false
-	hitting = false
 	attack_time = 0.0
-	hit_time = 0.0
 	death_time = 0.0
-	active_death_cells = _pick_hit_cells()
+	active_death_cells = _pick_death_leadin_cells()
 	active_death_cells.append_array(_pick_death_cells())
 	playback_death_frames = death_frames
 	if active_death_cells.size() > 0:
@@ -280,35 +268,8 @@ func show_death_frame(death_frame: int) -> void:
 		show_frame(death_row, death_frame, false)
 
 
-func has_hit_pose() -> bool:
-	return hit_row >= 0 or hit_cells.size() > 0 or hit_cells_south.size() > 0
-
-
-func show_hit_frame(hit_frame: int) -> void:
-	if not uses_sheet:
-		return
-	var flip := dir_flip if death_uses_flip else false
-	if hit_row >= 0 and cols_are_dirs:
-		show_frame(hit_row, dir_col, flip)
-		return
-	if active_hit_cells.size() == 0:
-		return
-	var cell: Vector2i = active_hit_cells[clampi(hit_frame, 0, active_hit_cells.size() - 1)]
-	show_frame(cell.y, cell.x, flip)
-
-
-func tick_hit_reaction(delta: float) -> bool:
-	if not hitting:
-		return false
-	hit_time += delta
-	var frames := maxi(1, active_hit_cells.size())
-	var frame := mini(int(hit_time * DEATH_FPS), frames - 1)
-	show_hit_frame(frame)
-	var hold := maxf(HIT_HOLD, float(frames) / DEATH_FPS)
-	if hit_time >= hold:
-		hitting = false
-		return false
-	return true
+func has_death_leadin_hit() -> bool:
+	return hit_row >= 0
 
 
 func show_frame(row: int, col: int, flip: bool) -> void:
@@ -345,20 +306,12 @@ func trigger_hit() -> void:
 		HitStyle.PLAYER_FLICKER:
 			flicker_remaining = hit_duration
 		HitStyle.ENEMY_FLASH:
-			active_hit_cells = _pick_hit_cells()
-			if active_hit_cells.size() > 0:
-				hitting = true
-				hit_time = 0.0
-				show_hit_frame(0)
-			else:
-				trigger_enemy_flash()
+			trigger_enemy_flash()
 		_:
 			pass
 
 
 func clear_hit_visual() -> void:
-	hitting = false
-	hit_time = 0.0
 	flicker_remaining = 0.0
 	flash_remaining = 0.0
 	if modulate_target == null:
@@ -381,9 +334,8 @@ func play_preview(state: State) -> void:
 		State.ATTACK:
 			start_attack()
 		State.HIT:
+			show_walk_frame(0)
 			trigger_hit()
-			if not hitting:
-				show_walk_frame(0)
 		State.DEATH:
 			start_death()
 
@@ -411,19 +363,12 @@ func tick_preview(delta: float) -> void:
 			else:
 				show_attack_frame(attack_frame)
 		State.HIT:
-			if hitting or has_hit_pose():
-				if not tick_hit_reaction(delta):
-					if preview_looping:
-						trigger_hit()
-					else:
-						play_preview(State.IDLE)
-			else:
-				show_walk_frame(0)
-				_tick_hit_preview(delta)
-				if _hit_preview_done() and preview_looping:
-					trigger_hit()
-				elif _hit_preview_done():
-					play_preview(State.IDLE)
+			show_walk_frame(0)
+			_tick_hit_preview(delta)
+			if _hit_preview_done() and preview_looping:
+				trigger_hit()
+			elif _hit_preview_done():
+				play_preview(State.IDLE)
 		State.DEATH:
 			if not uses_sheet:
 				return
@@ -450,11 +395,8 @@ func step_preview() -> void:
 			attack_time = float(frame) / ATTACK_FPS
 			show_attack_frame(frame)
 		State.HIT:
-			if has_hit_pose():
-				trigger_hit()
-			else:
-				show_walk_frame(0)
-				trigger_hit()
+			show_walk_frame(0)
+			trigger_hit()
 		State.DEATH:
 			if not uses_sheet:
 				return
@@ -478,7 +420,7 @@ func current_fps() -> float:
 		State.DEATH:
 			return DEATH_FPS
 		State.HIT:
-			return DEATH_FPS if has_hit_pose() else 0.0
+			return 0.0
 		_:
 			return 0.0
 
@@ -509,10 +451,10 @@ func _pick_death_cells() -> Array[Vector2i]:
 	return _pick_facing_cells(death_cells, death_cells_south)
 
 
-func _pick_hit_cells() -> Array[Vector2i]:
+func _pick_death_leadin_cells() -> Array[Vector2i]:
 	if hit_row >= 0 and cols_are_dirs:
 		return [Vector2i(dir_col, hit_row)]
-	return _pick_facing_cells(hit_cells, hit_cells_south)
+	return []
 
 
 func _pick_facing_cells(north: Array[Vector2i], south: Array[Vector2i]) -> Array[Vector2i]:

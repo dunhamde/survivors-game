@@ -16,13 +16,9 @@ extends Resource
 @export var walk_frames: int = 5
 @export var death_row: int = 9
 @export var death_frames: int = 5
-## Hit-react row when sheet columns are facings. -1 uses hit_cells instead.
+## Hit-react row when sheet columns are facings. Prepended to death only; surviving hits use the red flash.
 @export var hit_row: int = -1
 ## Explicit death frames as (column, row). Empty uses linear frames from death_row.
 @export var death_cells: Array[Vector2i] = []
 ## South/SE death clip. Used when facing E/SE/S if non-empty; otherwise death_cells.
 @export var death_cells_south: Array[Vector2i] = []
-## Hit-react frames as (column, row). Empty keeps the red flash. Prepended to death.
-@export var hit_cells: Array[Vector2i] = []
-## South/SE hit pose. Used when facing E/SE/S if non-empty; otherwise hit_cells.
-@export var hit_cells_south: Array[Vector2i] = []
