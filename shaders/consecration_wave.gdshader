@@ -56,7 +56,7 @@ void fragment() {
 	tongues *= smoothstep(0.05, 0.0, d) * smoothstep(-0.07, -0.01, d);
 
 	float appear = smoothstep(0.0, 0.06, u);
-	float fade = 1.0 - smoothstep(0.62, 1.0, u);
+	float fade = 1.0 - smoothstep(0.48, 0.82, u);
 	float energy = (front * 0.95 + trail * 0.55 + core * 1.15 + sheet * 0.22 + tongues * 0.65);
 	energy *= appear * fade * intensity;
 
