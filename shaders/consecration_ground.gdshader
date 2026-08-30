@@ -31,7 +31,7 @@ void fragment() {
 	vec3 lava = mix(magma, gold, step(0.62, heat * flicker));
 	vec3 col = mix(earth, lava, clamp(lava_amt, 0.0, 1.0));
 
-	float edge_fade = 1.0 - smoothstep(radius_uv * 0.28, radius_uv * 0.92, r);
-	float alpha = cover * edge_fade * (0.55 + pulse * 0.22);
+	float edge_fade = 1.0 - smoothstep(radius_uv * 0.42, radius_uv * 0.96, r);
+	float alpha = cover * edge_fade * (0.7 + pulse * 0.22);
 	COLOR = vec4(col, clamp(alpha, 0.0, 1.0));
 }

@@ -203,13 +203,13 @@ static func _make_pack() -> Image:
 			var edge_n := (_value_noise(px * 0.1, 19) - 0.5) * 0.1
 			edge_n += sin(ang * 2.0 + _value_noise(px * 0.06, 5) * 5.0) * 0.045
 			var limit := CIRCLE_UV + edge_n
-			var radial := 1.0 - _smoothstep(limit * 0.32, limit, uv_r)
+			var radial := 1.0 - _smoothstep(limit * 0.48, limit, uv_r)
 			var blotch := _value_noise(px * 0.08, 41)
-			if blotch < 0.48:
+			if blotch < 0.38:
 				blotch = 0.0
 			else:
-				blotch = (blotch - 0.48) * 1.6
-			var earth_amt := maxf(heat[idx] * 1.25, blotch * 0.75)
+				blotch = (blotch - 0.38) * 1.45
+			var earth_amt := maxf(heat[idx] * 1.3, blotch * 0.95)
 			var cover := clampf(earth_amt * radial, 0.0, 1.0)
 			if cover < 0.04 and heat[idx] < 0.12:
 				img.set_pixel(x, y, Color(0, 0, 0, 0))
@@ -237,48 +237,46 @@ static func _stamp_cracks(
 		radius: float,
 		rng: RandomNumberGenerator
 ) -> void:
-	_stamp_blob(pool, size, center, 2.6, 1.0)
-	_stamp_blob(heat, size, center, 2.2, 1.0)
-	_stamp_blob(heat, size, center, 3.4, 0.4)
+	_stamp_blob(pool, size, center, 2.8, 1.0)
+	_stamp_blob(heat, size, center, 2.4, 1.0)
 	for _cross in 2:
 		var ang := rng.randf() * TAU
-		var half := radius * rng.randf_range(0.16, 0.28)
+		var half := radius * rng.randf_range(0.14, 0.24)
 		var path := _crack_path(
 			center + Vector2.from_angle(ang) * -half,
 			center + Vector2.from_angle(ang) * half,
 			rng,
 			2
 		)
-		_stamp_path(heat, size, path, 1.15, 0.95)
+		_stamp_path(heat, size, path, 1.6, 1.0)
 
-	var major := 6
+	var major := 5
 	for i in major:
-		var ang := TAU * float(i) / float(major) + rng.randf_range(-0.28, 0.28)
-		var inner := rng.randf_range(0.04, 0.14) * radius
-		var outer := rng.randf_range(0.62, 0.88) * radius
+		var ang := TAU * float(i) / float(major) + rng.randf_range(-0.32, 0.32)
+		var inner := rng.randf_range(0.04, 0.12) * radius
+		var outer := rng.randf_range(0.55, 0.8) * radius
 		var path := _crack_path(
 			center + Vector2.from_angle(ang) * inner,
 			center + Vector2.from_angle(ang) * outer,
 			rng,
-			3
+			2
 		)
-		_stamp_path(heat, size, path, 1.2, 1.0)
-		_stamp_path(heat, size, path, 2.1, 0.4)
-		_maybe_pools(pool, heat, size, path, rng, 0.4)
-		if path.size() < 4:
+		_stamp_path(heat, size, path, 1.7, 1.0)
+		_maybe_pools(pool, heat, size, path, rng, 0.35)
+		if path.size() < 4 or rng.randf() < 0.35:
 			continue
-		var branch_at := rng.randi_range(int(path.size() * 0.3), int(path.size() * 0.7))
+		var branch_at := rng.randi_range(int(path.size() * 0.35), int(path.size() * 0.7))
 		var origin: Vector2 = path[branch_at]
 		var tangent := (path[mini(branch_at + 1, path.size() - 1)] - path[maxi(branch_at - 1, 0)]).normalized()
 		if tangent == Vector2.ZERO:
 			tangent = Vector2.from_angle(ang)
 		var side := -1.0 if rng.randf() < 0.5 else 1.0
-		var blen := radius * rng.randf_range(0.18, 0.34)
-		var dest := origin + tangent.rotated(side * deg_to_rad(rng.randf_range(32.0, 70.0))) * blen
-		if dest.distance_to(center) > radius * 0.9:
-			dest = center + (dest - center).normalized() * radius * 0.86
+		var blen := radius * rng.randf_range(0.16, 0.28)
+		var dest := origin + tangent.rotated(side * deg_to_rad(rng.randf_range(36.0, 72.0))) * blen
+		if dest.distance_to(center) > radius * 0.82:
+			dest = center + (dest - center).normalized() * radius * 0.78
 		var branch := _crack_path(origin, dest, rng, 2)
-		_stamp_path(heat, size, branch, 1.05, 0.85)
+		_stamp_path(heat, size, branch, 1.5, 0.9)
 
 
 static func _maybe_pools(
