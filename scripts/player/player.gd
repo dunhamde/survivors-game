@@ -21,6 +21,7 @@ var alive: bool = true
 var level: int = 1
 var xp: int = 0
 var xp_to_next: int = 8
+var xp_gained: int = 0
 var _invuln_remaining: float = 0.0
 var _anim: SheetAnimator
 var _death_emitted: bool = false
@@ -117,6 +118,7 @@ func add_magnetism(amount: float) -> void:
 func gain_xp(amount: int) -> void:
 	if not alive or amount <= 0:
 		return
+	xp_gained += amount
 	xp += amount
 	while xp >= xp_to_next:
 		xp -= xp_to_next

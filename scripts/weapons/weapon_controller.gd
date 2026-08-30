@@ -43,3 +43,19 @@ func is_maxed(weapon_id: StringName) -> bool:
 		return false
 	var weapon: WeaponBase = weapons[weapon_id]
 	return weapon.level >= weapon.data.max_level
+
+
+func damage_rows() -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	for weapon_id in weapons:
+		var weapon: WeaponBase = weapons[weapon_id]
+		var display := String(weapon_id)
+		if weapon.data != null and weapon.data.display_name != "":
+			display = weapon.data.display_name
+		rows.append({
+			"id": weapon_id,
+			"name": display,
+			"damage": weapon.damage_dealt,
+			"level": weapon.level,
+		})
+	return rows

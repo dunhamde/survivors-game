@@ -314,99 +314,177 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="PauseMenu/Center"]
+[node name="Row" type="HBoxContainer" parent="PauseMenu/Center"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="XPFrame" type="PanelContainer" parent="PauseMenu/Center/Row"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("PanelGold")
+
+[node name="Margin" type="MarginContainer" parent="PauseMenu/Center/Row/XPFrame"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="PauseMenu/Center/Row/XPFrame/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="PauseMenu/Center/Row/XPFrame/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 22
+text = "Experience"
+horizontal_alignment = 1
+
+[node name="XPValue" type="Label" parent="PauseMenu/Center/Row/XPFrame/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.7, 1)
+theme_override_font_sizes/font_size = 36
+text = "0"
+horizontal_alignment = 1
+
+[node name="XPCaption" type="Label" parent="PauseMenu/Center/Row/XPFrame/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
+theme_override_font_sizes/font_size = 13
+text = "XP gained"
+horizontal_alignment = 1
+
+[node name="LevelLabel" type="Label" parent="PauseMenu/Center/Row/XPFrame/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.86, 0.68, 1)
+theme_override_font_sizes/font_size = 15
+text = "Level 1"
+horizontal_alignment = 1
+
+[node name="Panel" type="PanelContainer" parent="PauseMenu/Center/Row"]
 custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("PanelGold")
 
-[node name="Margin" type="MarginContainer" parent="PauseMenu/Center/Panel"]
+[node name="Margin" type="MarginContainer" parent="PauseMenu/Center/Row/Panel"]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 16
 
-[node name="VBox" type="VBoxContainer" parent="PauseMenu/Center/Panel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="PauseMenu/Center/Row/Panel/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="PauseMenu/Center/Panel/Margin/VBox"]
+[node name="Title" type="Label" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
 theme_override_font_sizes/font_size = 28
 text = "Paused"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+[node name="ResumeButton" type="Button" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Resume"
 
-[node name="RetryButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+[node name="RetryButton" type="Button" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Retry"
 
-[node name="DevButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+[node name="DevButton" type="Button" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Dev"
 
-[node name="QuitButton" type="Button" parent="PauseMenu/Center/Panel/Margin/VBox"]
+[node name="QuitButton" type="Button" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Quit"
 
-[node name="Hint" type="Label" parent="PauseMenu/Center/Panel/Margin/VBox"]
+[node name="Hint" type="Label" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
 theme_override_font_sizes/font_size = 12
 text = "Press Escape to resume"
 horizontal_alignment = 1
 
-[node name="DevBox" type="VBoxContainer" parent="PauseMenu/Center/Panel/Margin"]
+[node name="DevBox" type="VBoxContainer" parent="PauseMenu/Center/Row/Panel/Margin"]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+[node name="Title" type="Label" parent="PauseMenu/Center/Row/Panel/Margin/DevBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
 theme_override_font_sizes/font_size = 28
 text = "Dev"
 horizontal_alignment = 1
 
-[node name="GodMode" type="CheckBox" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+[node name="GodMode" type="CheckBox" parent="PauseMenu/Center/Row/Panel/Margin/DevBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "God Mode"
 
-[node name="GodHint" type="Label" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+[node name="GodHint" type="Label" parent="PauseMenu/Center/Row/Panel/Margin/DevBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.74, 0.55, 0.85)
 theme_override_font_sizes/font_size = 12
 text = "Invincible · attacks one-shot"
 horizontal_alignment = 1
 
-[node name="SpawnLabel" type="Label" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+[node name="SpawnLabel" type="Label" parent="PauseMenu/Center/Row/Panel/Margin/DevBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
 theme_override_font_sizes/font_size = 16
 text = "Spawn enemy"
 
-[node name="SpawnList" type="VBoxContainer" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+[node name="SpawnList" type="VBoxContainer" parent="PauseMenu/Center/Row/Panel/Margin/DevBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="BackButton" type="Button" parent="PauseMenu/Center/Panel/Margin/DevBox"]
+[node name="BackButton" type="Button" parent="PauseMenu/Center/Row/Panel/Margin/DevBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Back"
+
+[node name="DamageFrame" type="PanelContainer" parent="PauseMenu/Center/Row"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("PanelGold")
+
+[node name="Margin" type="MarginContainer" parent="PauseMenu/Center/Row/DamageFrame"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="PauseMenu/Center/Row/DamageFrame/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="PauseMenu/Center/Row/DamageFrame/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 22
+text = "Damage"
+horizontal_alignment = 1
+
+[node name="DamageList" type="VBoxContainer" parent="PauseMenu/Center/Row/DamageFrame/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="LevelUpUI" type="CanvasLayer" parent="."]
 process_mode = 3

@@ -1,6 +1,7 @@
 extends Area2D
 
 var damage: int = 18
+var source: WeaponBase
 var _hit: Dictionary = {}
 
 
@@ -25,6 +26,9 @@ func _on_body_entered(body: Node2D) -> void:
 func _try_hit(body: Node2D) -> void:
 	if _hit.has(body):
 		return
-	if body.is_in_group("enemies") and body.has_method("take_damage"):
+	if body.is_in_group("enemies"):
 		_hit[body] = true
-		body.take_damage(damage)
+		if source != null:
+			source.deal_to(body, damage)
+		elif body.has_method("take_damage"):
+			body.take_damage(damage)

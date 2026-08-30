@@ -15,6 +15,7 @@ static var _add_mat: CanvasItemMaterial
 var damage: int = 18
 var end_global: Vector2 = Vector2.ZERO
 var victim: Node2D
+var source: WeaponBase
 
 var _age: float = 0.0
 var _restrike_done: bool = false
@@ -59,7 +60,11 @@ func _process(delta: float) -> void:
 func _apply_hit() -> void:
 	if not is_instance_valid(victim):
 		return
-	if victim.is_in_group("enemies") and victim.has_method("take_damage"):
+	if not victim.is_in_group("enemies"):
+		return
+	if source != null:
+		source.deal_to(victim, damage)
+	elif victim.has_method("take_damage"):
 		victim.take_damage(damage)
 
 
