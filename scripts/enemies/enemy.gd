@@ -103,17 +103,19 @@ func _on_hit_flash_ended() -> void:
 	modulate = Color.WHITE
 
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int) -> int:
 	if health <= 0:
-		return
+		return 0
 	if DevCheats.god_mode:
 		amount = health
+	var dealt := mini(amount, health)
 	health = maxi(0, health - amount)
 	DamageNumber.spawn(self, amount)
 	_anim.trigger_enemy_flash()
 	damaged.emit(health, max_health)
 	if health <= 0:
 		_die()
+	return dealt
 
 
 func _die() -> void:

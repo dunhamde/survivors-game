@@ -5,17 +5,20 @@ signal retry_pressed
 signal quit_pressed
 signal spawn_enemy_requested(id: StringName)
 
-@onready var main_box: VBoxContainer = $Center/Panel/Margin/VBox
-@onready var resume_button: Button = $Center/Panel/Margin/VBox/ResumeButton
-@onready var retry_button: Button = $Center/Panel/Margin/VBox/RetryButton
-@onready var damage_numbers_check: CheckBox = $Center/Panel/Margin/VBox/DamageNumbers
-@onready var dev_button: Button = $Center/Panel/Margin/VBox/DevButton
-@onready var quit_button: Button = $Center/Panel/Margin/VBox/QuitButton
-@onready var hint: Label = $Center/Panel/Margin/VBox/Hint
-@onready var dev_box: VBoxContainer = $Center/Panel/Margin/DevBox
-@onready var god_mode_check: CheckBox = $Center/Panel/Margin/DevBox/GodMode
-@onready var spawn_list: VBoxContainer = $Center/Panel/Margin/DevBox/SpawnList
-@onready var back_button: Button = $Center/Panel/Margin/DevBox/BackButton
+@onready var main_box: VBoxContainer = $Center/Row/Panel/Margin/VBox
+@onready var resume_button: Button = $Center/Row/Panel/Margin/VBox/ResumeButton
+@onready var retry_button: Button = $Center/Row/Panel/Margin/VBox/RetryButton
+@onready var damage_numbers_check: CheckBox = $Center/Row/Panel/Margin/VBox/DamageNumbers
+@onready var dev_button: Button = $Center/Row/Panel/Margin/VBox/DevButton
+@onready var quit_button: Button = $Center/Row/Panel/Margin/VBox/QuitButton
+@onready var hint: Label = $Center/Row/Panel/Margin/VBox/Hint
+@onready var dev_box: VBoxContainer = $Center/Row/Panel/Margin/DevBox
+@onready var god_mode_check: CheckBox = $Center/Row/Panel/Margin/DevBox/GodMode
+@onready var spawn_list: VBoxContainer = $Center/Row/Panel/Margin/DevBox/SpawnList
+@onready var back_button: Button = $Center/Row/Panel/Margin/DevBox/BackButton
+@onready var xp_value: Label = $Center/Row/XPFrame/Margin/VBox/XPValue
+@onready var xp_level: Label = $Center/Row/XPFrame/Margin/VBox/LevelLabel
+@onready var damage_list: VBoxContainer = $Center/Row/DamageFrame/Margin/VBox/DamageList
 
 
 func _ready() -> void:
@@ -53,6 +56,7 @@ func show_menu() -> void:
 	visible = true
 	GameSettings.ensure_loaded()
 	damage_numbers_check.set_pressed_no_signal(GameSettings.show_damage_numbers)
+	_refresh_stats()
 	_show_main()
 
 
@@ -86,6 +90,50 @@ func _on_spawn_pressed(id: StringName) -> void:
 	if id == &"":
 		return
 	spawn_enemy_requested.emit(id)
+
+
+func _refresh_stats() -> void:
+	var player := get_tree().get_first_node_in_group("player")
+	var gained := 0
+	var level := 1
+	if player != null:
+		if "xp_gained" in player:
+			gained = int(player.xp_gained)
+		if "level" in player:
+			level = int(player.level)
+	xp_value.text = str(gained)
+	xp_level.text = "Level %d" % level
+
+	while damage_list.get_child_count() > 0:
+		var child := damage_list.get_child(0)
+		damage_list.remove_child(child)
+		child.free()
+	var rows: Array = []
+	if player != null and "weapons" in player and player.weapons != null and player.weapons.has_method("damage_rows"):
+		rows = player.weapons.damage_rows()
+	if rows.is_empty():
+		_add_damage_row("—", 0)
+		return
+	for row in rows:
+		_add_damage_row(str(row.get("name", "Weapon")), int(row.get("damage", 0)))
+
+
+func _add_damage_row(weapon_name: String, damage: int) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var name_label := Label.new()
+	name_label.text = weapon_name
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_label.add_theme_font_size_override("font_size", 15)
+	name_label.add_theme_color_override("font_color", Color(0.92, 0.86, 0.68, 1))
+	var damage_label := Label.new()
+	damage_label.text = str(damage)
+	damage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	damage_label.add_theme_font_size_override("font_size", 16)
+	damage_label.add_theme_color_override("font_color", Color(0.95, 0.82, 0.4, 1))
+	row.add_child(name_label)
+	row.add_child(damage_label)
+	damage_list.add_child(row)
 
 
 func _unhandled_input(event: InputEvent) -> void:

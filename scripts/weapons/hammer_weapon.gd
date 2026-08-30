@@ -46,6 +46,7 @@ func _spawn(target: Node2D) -> void:
 	hammer.damage = current_damage()
 	hammer.speed = 240.0 + float(level) * 12.0
 	hammer.target = target
+	hammer.source = self
 	var aim := global_position.direction_to(target.global_position)
 	if aim == Vector2.ZERO:
 		aim = Vector2.RIGHT

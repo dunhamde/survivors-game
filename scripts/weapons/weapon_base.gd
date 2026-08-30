@@ -5,11 +5,26 @@ var data: WeaponData
 var level: int = 1
 var player: CharacterBody2D
 var cooldown: float = 0.0
+var damage_dealt: int = 0
 
 
 func setup(p_data: WeaponData, p_player: CharacterBody2D) -> void:
 	data = p_data
 	player = p_player
+
+
+func record_damage(amount: int) -> void:
+	if amount > 0:
+		damage_dealt += amount
+
+
+func deal_to(target: Node, amount: int) -> int:
+	if not Hittable.is_target(target):
+		return 0
+	var dealt: Variant = target.take_damage(amount)
+	var applied := amount if typeof(dealt) != TYPE_INT else int(dealt)
+	record_damage(applied)
+	return applied
 
 
 func current_damage() -> int:

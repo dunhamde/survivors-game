@@ -83,7 +83,7 @@ func _pulse() -> void:
 		_wave.visible = true
 	for body in hitbox.get_overlapping_bodies():
 		if Hittable.is_target(body):
-			body.take_damage(current_damage())
+			deal_to(body, current_damage())
 
 
 func _tick_visuals(delta: float) -> void:

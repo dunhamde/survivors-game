@@ -5,6 +5,7 @@ var damage: int = 28
 var lifetime: float = 2.6
 var direction: Vector2 = Vector2.RIGHT
 var target: Node2D
+var source: WeaponBase
 
 
 func _ready() -> void:
@@ -22,6 +23,10 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if Hittable.is_target(body):
+	if not Hittable.is_target(body):
+		return
+	if source != null:
+		source.deal_to(body, damage)
+	else:
 		body.take_damage(damage)
-		queue_free()
+	queue_free()

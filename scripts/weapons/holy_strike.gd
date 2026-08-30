@@ -43,6 +43,7 @@ func _fire(target: Node2D) -> void:
 	bolt.end_global = to
 	bolt.damage = current_damage()
 	bolt.victim = target
+	bolt.source = self
 	entities().add_child(bolt)
 
 
