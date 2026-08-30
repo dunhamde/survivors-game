@@ -15,6 +15,7 @@ const PLAYER_DEATH_HOLD := 0.4
 const ENEMY_DEATH_HOLD := 0.15
 const PLAYER_INVULN_TIME := 0.55
 const ENEMY_FLASH_TIME := 0.2
+const ENEMY_FLASH_COLOR := Color(1.0, 0.0, 0.0)
 const PLAYER_SPRITE_POS := Vector2(0.0, -30.0)
 const PLAYER_TEXTURE_PATH := "res://assets/sprites/player/paladin.png"
 # Octants are E, SE, S, SW, W, NW, N, NE. Skeleton rows are S, SE, E, NE, N, NW, W, SW.
@@ -298,7 +299,7 @@ func tick_enemy_flash(delta: float) -> void:
 	if flash_remaining > 0.0:
 		flash_remaining = maxf(0.0, flash_remaining - delta)
 		if modulate_target != null:
-			modulate_target.modulate = Color(1.0, 0.55, 0.55) if flash_remaining > 0.0 else Color.WHITE
+			modulate_target.modulate = ENEMY_FLASH_COLOR if flash_remaining > 0.0 else Color.WHITE
 
 
 func trigger_hit() -> void:
