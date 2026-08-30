@@ -89,6 +89,15 @@ func _test_skeleton() -> void:
 	anim.show_death_frame(3)
 	_ok(anim.last_row == 9 and anim.last_col == 3, "death stays on row 9")
 	_ok(anim.hit_style == SheetAnimator.HitStyle.ENEMY_FLASH, "hit is modulate flash")
+	_assert_enemy_hit_flash(anim)
+
+
+func _assert_enemy_hit_flash(anim: SheetAnimator) -> void:
+	anim.trigger_enemy_flash()
+	_ok(anim.is_flashing(), "surviving hit flashes")
+	anim.tick_enemy_flash(0.0)
+	if anim.modulate_target != null:
+		_ok(anim.modulate_target.modulate == Color(1.0, 0.0, 0.0), "full red tint")
 
 
 func _test_ogre() -> void:
@@ -114,6 +123,7 @@ func _test_ogre() -> void:
 	_ok(anim.last_col == 0 and anim.last_row == 10, "south clip cell 0 (0,10)")
 	anim.show_death_frame(2)
 	_ok(anim.last_col == 4 and anim.last_row == 10, "south clip cell 2 (4,10)")
+	_assert_enemy_hit_flash(anim)
 
 
 func _test_grunt() -> void:
@@ -127,6 +137,9 @@ func _test_grunt() -> void:
 	_ok(anim.dir_col == 0, "N col 0 uses north clip")
 	anim.trigger_hit()
 	_ok(anim.flash_remaining > 0.0, "surviving hit flashes red")
+	anim.tick_enemy_flash(0.0)
+	if anim.modulate_target != null:
+		_ok(anim.modulate_target.modulate == Color(1.0, 0.0, 0.0), "full red tint")
 	anim.start_death()
 	_ok(anim.playback_death_frames == 3, "hit plus 2 death frames")
 	anim.show_death_frame(0)
@@ -157,3 +170,4 @@ func _test_hogger() -> void:
 	_ok(anim.dir_flip, "flip on -X")
 	anim.set_facing_from_vector(Vector2.RIGHT)
 	_ok(not anim.dir_flip, "no flip on +X")
+	_assert_enemy_hit_flash(anim)

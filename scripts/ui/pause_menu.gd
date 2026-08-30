@@ -8,6 +8,7 @@ signal spawn_enemy_requested(id: StringName)
 @onready var main_box: VBoxContainer = $Center/Row/Panel/Margin/VBox
 @onready var resume_button: Button = $Center/Row/Panel/Margin/VBox/ResumeButton
 @onready var retry_button: Button = $Center/Row/Panel/Margin/VBox/RetryButton
+@onready var damage_numbers_check: CheckBox = $Center/Row/Panel/Margin/VBox/DamageNumbers
 @onready var dev_button: Button = $Center/Row/Panel/Margin/VBox/DevButton
 @onready var quit_button: Button = $Center/Row/Panel/Margin/VBox/QuitButton
 @onready var hint: Label = $Center/Row/Panel/Margin/VBox/Hint
@@ -28,8 +29,11 @@ func _ready() -> void:
 	var touch := OS.has_feature("web") or DisplayServer.is_touchscreen_available() or OS.has_feature("mobile")
 	if touch:
 		hint.text = "Tap Resume to continue"
+	GameSettings.ensure_loaded()
+	damage_numbers_check.set_pressed_no_signal(GameSettings.show_damage_numbers)
 	resume_button.pressed.connect(func() -> void: toggle_requested.emit())
 	retry_button.pressed.connect(func() -> void: retry_pressed.emit())
+	damage_numbers_check.toggled.connect(_on_damage_numbers_toggled)
 	dev_button.pressed.connect(_show_dev)
 	quit_button.pressed.connect(func() -> void: quit_pressed.emit())
 	god_mode_check.toggled.connect(_on_god_mode_toggled)
@@ -50,6 +54,8 @@ func setup_spawn_options(entries: Array) -> void:
 
 func show_menu() -> void:
 	visible = true
+	GameSettings.ensure_loaded()
+	damage_numbers_check.set_pressed_no_signal(GameSettings.show_damage_numbers)
 	_refresh_stats()
 	_show_main()
 
@@ -70,6 +76,10 @@ func _show_dev() -> void:
 	dev_box.visible = true
 	god_mode_check.set_pressed_no_signal(DevCheats.god_mode)
 	god_mode_check.grab_focus()
+
+
+func _on_damage_numbers_toggled(pressed: bool) -> void:
+	GameSettings.set_show_damage_numbers(pressed)
 
 
 func _on_god_mode_toggled(pressed: bool) -> void:

@@ -26,9 +26,10 @@ func _on_body_entered(body: Node2D) -> void:
 func _try_hit(body: Node2D) -> void:
 	if _hit.has(body):
 		return
-	if body.is_in_group("enemies"):
-		_hit[body] = true
-		if source != null:
-			source.deal_to(body, damage)
-		elif body.has_method("take_damage"):
-			body.take_damage(damage)
+	if not Hittable.is_target(body):
+		return
+	_hit[body] = true
+	if source != null:
+		source.deal_to(body, damage)
+	else:
+		body.take_damage(damage)

@@ -1,11 +1,11 @@
 ---
-description: Create a feature branch, commit, and push it — never push to master until the user has tested
+description: Create a feature branch, commit, push, auto-merge to master, then pull locally
 alwaysApply: true
 ---
 
 # Feature-branch workflow
 
-When the user asks for code or project changes in this repo, do not work on `master` (or `main`). This repo opts in to commit-and-push on feature branches without a separate "please commit" request.
+When the user asks for code or project changes in this repo, do not work on `master` (or `main`). This repo opts in to commit, push, and auto-merge on feature branches without a separate "please commit" or "please merge" request.
 
 ## Before editing
 1. If HEAD is `master`/`main`, create and check out a new branch named `cursor/<short-kebab-description>`.
@@ -16,9 +16,11 @@ When the user asks for code or project changes in this repo, do not work on `mas
 ## After the change is done
 1. Commit the relevant files with a concise message focused on why.
 2. Push the feature branch: `git push -u origin HEAD`.
-3. Tell the user the branch name and that it is ready to test. Do not open a PR unless they ask.
+3. Open a PR and merge it immediately (`gh pr create`, then `gh pr merge --merge --delete-branch`). Do not wait for the user to test first.
+4. If this session is on the local PC (not a cloud agent VM), check out `master`/`main` and `git pull` so the local tree matches the merge.
+5. Tell the user the branch name, PR URL, and that it is merged.
 
 ## Never
-- Do not `git push` to `master` or `main`.
-- Do not merge into `master`/`main` until the user says they have tested and want it merged.
+- Do not `git push` to `master` or `main` (merge via GitHub PR only).
+- Do not leave a completed task unmerged on a feature branch.
 - Do not force-push, skip hooks, or amend unless the user explicitly asks.

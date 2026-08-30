@@ -40,7 +40,7 @@ func _physics_process(delta: float) -> void:
 				_phase = Phase.TELEGRAPH
 				_phase_time = 0.0
 				velocity = Vector2.ZERO
-				modulate = Color(1.45, 0.75, 0.45)
+				_set_body_modulate(Color(1.45, 0.75, 0.45))
 			if _summon_cd <= 0.0:
 				_summon_minions()
 				_summon_cd = 8.0
@@ -50,7 +50,7 @@ func _physics_process(delta: float) -> void:
 				_charge_dir = global_position.direction_to(_player.global_position)
 				_phase = Phase.CHARGE
 				_phase_time = 0.0
-				modulate = Color.WHITE
+				_set_body_modulate(Color.WHITE)
 		Phase.CHARGE:
 			velocity = _charge_dir * 270.0
 			if _phase_time >= 0.48:
@@ -62,6 +62,19 @@ func _physics_process(delta: float) -> void:
 				_phase = Phase.CHASE
 				_phase_time = 0.0
 	move_and_slide()
+
+
+func _on_hit_flash_ended() -> void:
+	if _phase == Phase.TELEGRAPH:
+		_set_body_modulate(Color(1.45, 0.75, 0.45))
+	else:
+		super._on_hit_flash_ended()
+
+
+func _set_body_modulate(color: Color) -> void:
+	if _anim.is_flashing():
+		return
+	modulate = color
 
 
 func _summon_minions() -> void:

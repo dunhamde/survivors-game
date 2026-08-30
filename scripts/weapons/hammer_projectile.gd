@@ -23,10 +23,10 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if not body.is_in_group("enemies"):
+	if not Hittable.is_target(body):
 		return
 	if source != null:
 		source.deal_to(body, damage)
-	elif body.has_method("take_damage"):
+	else:
 		body.take_damage(damage)
 	queue_free()

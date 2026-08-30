@@ -84,6 +84,7 @@ func take_damage(amount: int) -> void:
 	if not alive or _invuln_remaining > 0.0 or DevCheats.god_mode:
 		return
 	health = maxi(0, health - amount)
+	DamageNumber.spawn(self, amount, DamageNumber.PLAYER_COLOR)
 	health_changed.emit(health, max_health)
 	_invuln_remaining = invuln_time
 	if health <= 0:

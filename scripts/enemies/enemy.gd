@@ -23,7 +23,7 @@ var _death_finishing: bool = false
 func _ready() -> void:
 	add_to_group("enemies")
 	_anim = SheetAnimator.new()
-	_anim.bind(sprite, self)
+	_anim.bind(sprite, sprite)
 	if data != null:
 		apply_data(data)
 	health = max_health
@@ -38,7 +38,7 @@ func apply_data(p_data: EnemyData) -> void:
 	xp_value = p_data.xp_value
 	contact_damage = p_data.contact_damage
 	_anim = SheetAnimator.from_enemy_data(p_data)
-	_anim.bind(sprite, self)
+	_anim.bind(sprite, sprite)
 	_anim.apply_layout()
 	if _anim.uses_sheet:
 		_anim.show_walk_frame(0)
@@ -91,7 +91,16 @@ func _animate_death(delta: float) -> void:
 
 
 func _update_flash(delta: float) -> void:
+	var was_flashing := _anim.is_flashing()
 	_anim.tick_enemy_flash(delta)
+	if _anim.is_flashing():
+		modulate = Color.WHITE
+	elif was_flashing:
+		_on_hit_flash_ended()
+
+
+func _on_hit_flash_ended() -> void:
+	modulate = Color.WHITE
 
 
 func take_damage(amount: int) -> int:
@@ -101,6 +110,7 @@ func take_damage(amount: int) -> int:
 		amount = health
 	var dealt := mini(amount, health)
 	health = maxi(0, health - amount)
+	DamageNumber.spawn(self, amount)
 	_anim.trigger_enemy_flash()
 	damaged.emit(health, max_health)
 	if health <= 0:

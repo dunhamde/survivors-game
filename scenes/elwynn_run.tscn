@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/run/run_controller.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/run/elwynn_map.gd" id="2"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://scripts/virtual_joystick.gd" id="13"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="14"]
 [ext_resource type="Script" path="res://scripts/ui/hamburger_button.gd" id="15"]
+[ext_resource type="PackedScene" path="res://scenes/props/chest.tscn" id="16"]
 
 [sub_resource type="StyleBoxFlat" id="PanelGold"]
 bg_color = Color(0.12, 0.08, 0.04, 0.92)
@@ -111,6 +112,7 @@ skeleton_data = ExtResource("7")
 grunt_data = ExtResource("8")
 ogre_data = ExtResource("9")
 hogger_data = ExtResource("10")
+chest_scene = ExtResource("16")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -399,6 +401,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Retry"
 
+[node name="DamageNumbers" type="CheckBox" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+button_pressed = true
+text = "Damage Numbers"
+
 [node name="DevButton" type="Button" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
@@ -446,7 +454,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
 theme_override_font_sizes/font_size = 16
-text = "Spawn enemy"
+text = "Spawn"
 
 [node name="SpawnList" type="VBoxContainer" parent="PauseMenu/Center/Row/Panel/Margin/DevBox"]
 layout_mode = 2

@@ -19,7 +19,7 @@ func record_damage(amount: int) -> void:
 
 
 func deal_to(target: Node, amount: int) -> int:
-	if target == null or not is_instance_valid(target) or not target.has_method("take_damage"):
+	if not Hittable.is_target(target):
 		return 0
 	var dealt: Variant = target.take_damage(amount)
 	var applied := amount if typeof(dealt) != TYPE_INT else int(dealt)

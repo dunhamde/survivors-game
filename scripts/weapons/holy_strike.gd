@@ -21,13 +21,11 @@ func _nearest_in_range() -> Node2D:
 	var best := INF
 	var reach := current_area()
 	var reach_sq := reach * reach
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if not (enemy is Node2D):
-			continue
-		var dist := global_position.distance_squared_to((enemy as Node2D).global_position)
+	for target in Hittable.all_nodes(get_tree()):
+		var dist := global_position.distance_squared_to(target.global_position)
 		if dist < best and dist <= reach_sq:
 			best = dist
-			nearest = enemy as Node2D
+			nearest = target
 	return nearest
 
 
