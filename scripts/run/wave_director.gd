@@ -9,12 +9,15 @@ signal enemy_killed
 @export var grunt_data: EnemyData
 @export var ogre_data: EnemyData
 @export var hogger_data: EnemyData
+@export var chest_scene: PackedScene
 @export var spawn_radius: float = 430.0
 @export var hogger_time: float = ElwynnBeats.HOGGER_AT
+@export var chest_interval: float = 36.0
+@export var chest_max: int = 2
 
 var elapsed: float = 0.0
 var hogger_spawned: bool = false
-var _cooldowns: Dictionary = {"skeleton": 0.0, "grunt": 0.0, "ogre": 0.0}
+var _cooldowns: Dictionary = {"skeleton": 0.0, "grunt": 0.0, "ogre": 0.0, "chest": 18.0}
 
 
 func _physics_process(delta: float) -> void:
@@ -50,6 +53,12 @@ func _tick_spawns(delta: float, player: Node2D) -> void:
 		if float(_cooldowns["ogre"]) <= 0.0:
 			_spawn_pack(player, ogre_data, 1, cap)
 			_cooldowns["ogre"] = _ogre_interval()
+
+	_cooldowns["chest"] = float(_cooldowns["chest"]) - delta
+	if float(_cooldowns["chest"]) <= 0.0:
+		if _chest_count() < chest_max:
+			_spawn_chest(player, spawn_radius)
+		_cooldowns["chest"] = chest_interval
 
 
 func _alive_cap() -> int:
@@ -98,6 +107,7 @@ func spawnable_catalog() -> Array[Dictionary]:
 		if label.is_empty():
 			label = String(data.id)
 		items.append({"id": data.id, "name": label})
+	items.append({"id": &"chest", "name": "Chest"})
 	return items
 
 
@@ -107,6 +117,9 @@ func spawn_debug(id: StringName) -> void:
 		return
 	var parent := get_tree().get_first_node_in_group("entities")
 	if parent == null:
+		return
+	if id == &"chest":
+		_spawn_chest(player, 200.0)
 		return
 	var is_hogger := hogger_data != null and hogger_data.id == id
 	var scene := hogger_scene if is_hogger else enemy_scene
@@ -172,6 +185,24 @@ func _spawn_hogger(player: Node2D) -> void:
 	if not hogger.died.is_connected(_on_enemy_died):
 		hogger.died.connect(_on_enemy_died)
 	boss_spawned.emit(hogger)
+
+
+func _chest_count() -> int:
+	return get_tree().get_nodes_in_group("chests").size()
+
+
+func _spawn_chest(player: Node2D, distance: float) -> void:
+	if chest_scene == null:
+		return
+	var parent := get_tree().get_first_node_in_group("entities")
+	if parent == null:
+		return
+	var chest := chest_scene.instantiate() as Node2D
+	var angle := randf() * TAU
+	var dist := distance + randf_range(-18.0, 24.0)
+	var desired := player.global_position + Vector2.from_angle(angle) * dist
+	chest.global_position = _snap_spawn(parent, desired)
+	parent.add_child(chest)
 
 
 func _snap_spawn(map: Node, desired: Vector2) -> Vector2:
