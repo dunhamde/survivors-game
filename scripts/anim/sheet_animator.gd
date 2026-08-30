@@ -295,6 +295,10 @@ func trigger_enemy_flash() -> void:
 	flash_remaining = ENEMY_FLASH_TIME
 
 
+func is_flashing() -> bool:
+	return flash_remaining > 0.0
+
+
 func tick_enemy_flash(delta: float) -> void:
 	if flash_remaining > 0.0:
 		flash_remaining = maxf(0.0, flash_remaining - delta)
