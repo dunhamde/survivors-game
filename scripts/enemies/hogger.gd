@@ -50,12 +50,14 @@ func _physics_process(delta: float) -> void:
 				_charge_dir = global_position.direction_to(_player.global_position)
 				_phase = Phase.CHARGE
 				_phase_time = 0.0
+				collision_mask = COLLISION_MASK_WORLD
 				_set_body_modulate(Color.WHITE)
 		Phase.CHARGE:
 			velocity = _charge_dir * 270.0
 			if _phase_time >= 0.48:
 				_phase = Phase.RECOVER
 				_phase_time = 0.0
+				collision_mask = COLLISION_MASK_PACK
 		Phase.RECOVER:
 			velocity = velocity.move_toward(Vector2.ZERO, 600.0 * delta)
 			if _phase_time >= 0.65:

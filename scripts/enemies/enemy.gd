@@ -4,6 +4,10 @@ extends CharacterBody2D
 signal died
 signal damaged(current: int, maximum: int)
 
+## Physics layers: 2 = enemy, 16 = terrain (see project.godot).
+const COLLISION_MASK_WORLD := 16
+const COLLISION_MASK_PACK := 2 | 16
+
 @export var data: EnemyData
 
 var max_health: int = 40
@@ -22,6 +26,9 @@ var _death_finishing: bool = false
 
 func _ready() -> void:
 	add_to_group("enemies")
+	# Top-down: treat every contact as a wall so bodies slide apart instead of stacking.
+	motion_mode = MOTION_MODE_FLOATING
+	collision_mask = COLLISION_MASK_PACK
 	_anim = SheetAnimator.new()
 	_anim.bind(sprite, sprite)
 	if data != null:
