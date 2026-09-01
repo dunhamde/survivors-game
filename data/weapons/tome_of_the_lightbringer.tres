@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/libram_of_the_light.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"tome_of_the_lightbringer"
+display_name = "Tome of the Lightbringer"
+description = "Orbiting tomes linger with holy fire."
+scene = ExtResource("2")
+max_level = 1
+upgrade_hint = "Evolved"
+base_damage = 12.0
+damage_per_level = 0.0
+base_cooldown = 0.32
+cooldown_per_level = 0.0
+base_area = 52.0
+area_per_level = 0.0
+base_count = 3

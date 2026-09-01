@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/judgement.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"greater_judgement"
+display_name = "Greater Judgement"
+description = "Piercing judgement explodes at the end of its path."
+scene = ExtResource("2")
+max_level = 1
+upgrade_hint = "Evolved"
+base_damage = 20.0
+damage_per_level = 0.0
+base_cooldown = 0.4
+cooldown_per_level = 0.0
+base_area = 44.0
+area_per_level = 0.0
+base_count = 2

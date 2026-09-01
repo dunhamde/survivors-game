@@ -9,35 +9,38 @@ func _physics_process(delta: float) -> void:
 	cooldown = maxf(0.0, cooldown - delta)
 	if cooldown > 0.0:
 		return
-	var target := _nearest_in_range()
-	if target == null:
+	var targets := nearest_targets(projectile_count(), current_area())
+	if targets.is_empty():
 		return
-	_fire(target)
+	var aim := global_position.direction_to(targets[0].global_position)
+	if player.has_method("play_attack"):
+		player.play_attack(aim if aim != Vector2.ZERO else Vector2.RIGHT)
+	for target in targets:
+		_cast_chain(target)
 	cooldown = current_cooldown()
 
 
-func _nearest_in_range() -> Node2D:
-	var nearest: Node2D = null
-	var best := INF
-	var reach := current_area()
-	var reach_sq := reach * reach
-	for target in Hittable.all_nodes(get_tree()):
-		var dist := global_position.distance_squared_to(target.global_position)
-		if dist < best and dist <= reach_sq:
-			best = dist
-			nearest = target
-	return nearest
+func _cast_chain(start: Node2D) -> void:
+	var hops := 5 if is_id(&"beacon_of_light") else 1
+	var exclude: Dictionary = {}
+	var origin: Node2D = player
+	var current := start
+	while current != null and hops > 0:
+		_spawn_bolt(origin, current)
+		exclude[current] = true
+		hops -= 1
+		origin = current
+		current = nearest_target(origin.global_position, exclude, current_area() * 1.2)
 
 
-func _fire(target: Node2D) -> void:
-	var from := _body_point(player)
+func _spawn_bolt(from_node: Node2D, target: Node2D) -> void:
+	var from := _body_point(from_node)
 	var to := _body_point(target)
 	var direction := from.direction_to(to)
 	if direction == Vector2.ZERO:
 		direction = Vector2.RIGHT
-	if player.has_method("play_attack"):
-		player.play_attack(direction)
-	from += direction * 12.0
+	if from_node == player:
+		from += direction * 12.0
 	var bolt := BOLT_SCENE.instantiate()
 	bolt.global_position = from
 	bolt.end_global = to

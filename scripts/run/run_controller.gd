@@ -132,7 +132,7 @@ func _try_show_level_up() -> void:
 		return
 	_showing_level_up = true
 	_level_queue -= 1
-	var choices := UpgradePool.build_choices(player.weapons)
+	var choices := UpgradePool.build_choices(player.weapons, player)
 	level_up_ui.show_choices(choices)
 	get_tree().paused = true
 	_update_hamburger()

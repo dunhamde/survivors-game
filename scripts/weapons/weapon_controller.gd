@@ -20,6 +20,20 @@ func add_weapon(weapon_data: WeaponData) -> void:
 	weapons[weapon_data.id] = instance
 
 
+func replace_weapon(old_id: StringName, new_data: WeaponData) -> void:
+	if new_data == null:
+		return
+	var carried := 0
+	if weapons.has(old_id):
+		var old_weapon: WeaponBase = weapons[old_id]
+		carried = old_weapon.damage_dealt
+		weapons.erase(old_id)
+		old_weapon.free()
+	add_weapon(new_data)
+	if weapons.has(new_data.id):
+		weapons[new_data.id].damage_dealt = carried
+
+
 func upgrade_weapon(weapon_id: StringName) -> bool:
 	if not weapons.has(weapon_id):
 		return false

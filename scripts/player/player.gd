@@ -22,6 +22,11 @@ var level: int = 1
 var xp: int = 0
 var xp_to_next: int = 8
 var xp_gained: int = 0
+var facing: Vector2 = Vector2.RIGHT
+var seals: Dictionary = {}
+var command_bonus: int = 0
+var area_mult: float = 1.0
+var cooldown_mult: float = 1.0
 var _invuln_remaining: float = 0.0
 var _anim: SheetAnimator
 var _death_emitted: bool = false
@@ -58,6 +63,8 @@ func _physics_process(delta: float) -> void:
 		var stick := get_tree().get_first_node_in_group("virtual_joystick")
 		if stick != null and stick.has_method("get_vector"):
 			input_vector = stick.get_vector()
+	if input_vector.length_squared() > 0.0001:
+		facing = input_vector.normalized()
 	velocity = input_vector * move_speed
 	move_and_slide()
 	_animate(delta, input_vector)
@@ -114,6 +121,25 @@ func add_max_health(amount: int) -> void:
 
 func add_magnetism(amount: float) -> void:
 	magnetism = maxf(0.0, magnetism + amount)
+
+
+func has_seal(id: StringName) -> bool:
+	return seals.has(id)
+
+
+func add_seal(id: StringName) -> void:
+	if seals.has(id):
+		return
+	seals[id] = true
+	match id:
+		&"seal_of_command":
+			command_bonus += 1
+		&"seal_of_righteousness":
+			area_mult += 0.2
+		&"infusion_of_light":
+			cooldown_mult *= 0.82
+		_:
+			pass
 
 
 func gain_xp(amount: int) -> void:
