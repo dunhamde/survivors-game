@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/avenger_shield.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"truthguard"
+display_name = "Truthguard"
+description = "The last bounce leaves a patch of holy fire."
+scene = ExtResource("2")
+max_level = 1
+upgrade_hint = "Evolved"
+base_damage = 22.0
+damage_per_level = 0.0
+base_cooldown = 1.15
+cooldown_per_level = 0.0
+base_area = 20.0
+area_per_level = 0.0
+base_count = 1

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/holy_strike.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"beacon_of_light"
+display_name = "Beacon of Light"
+description = "Holy Shock chains through nearby foes."
+scene = ExtResource("2")
+max_level = 1
+upgrade_hint = "Evolved"
+base_damage = 22.0
+damage_per_level = 0.0
+base_cooldown = 0.48
+cooldown_per_level = 0.0
+base_area = 96.0
+area_per_level = 0.0
+base_count = 1

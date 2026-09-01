@@ -19,6 +19,7 @@ var _player: Node2D
 var _anim: SheetAnimator
 var _dying: bool = false
 var _death_finishing: bool = false
+var _knockback: Vector2 = Vector2.ZERO
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
@@ -61,6 +62,20 @@ func health_ratio() -> float:
 	return float(health) / float(max_health)
 
 
+func apply_knockback(from: Vector2, strength: float) -> void:
+	var dir := from.direction_to(global_position)
+	if dir == Vector2.ZERO:
+		dir = Vector2.RIGHT
+	_knockback = dir * strength
+
+
+func apply_pull(toward: Vector2, strength: float) -> void:
+	var dir := global_position.direction_to(toward)
+	if dir == Vector2.ZERO:
+		return
+	_knockback = dir * strength
+
+
 func _physics_process(delta: float) -> void:
 	if _dying:
 		_update_flash(delta)
@@ -79,7 +94,8 @@ func _chase(delta: float) -> void:
 		_animate_walk(delta, Vector2.ZERO)
 		return
 	var direction := global_position.direction_to(_player.global_position)
-	velocity = direction * move_speed
+	velocity = direction * move_speed + _knockback
+	_knockback = _knockback.move_toward(Vector2.ZERO, 520.0 * delta)
 	move_and_slide()
 	_animate_walk(delta, direction)
 
