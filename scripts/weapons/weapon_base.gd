@@ -123,10 +123,12 @@ func spawn_zone(at: Vector2, radius: float, pulses: int, p_damage: int = -1, ext
 	for key in extras:
 		zone.set(key, extras[key])
 	var host := entities()
+	# Hits can spawn zones during physics query flushing. Defer tree entry so
+	# the zone's _ready() can safely configure monitoring and collision shapes.
 	if host != null:
-		host.add_child(zone)
+		host.add_child.call_deferred(zone)
 	else:
-		add_child(zone)
+		add_child.call_deferred(zone)
 	return zone
 
 
