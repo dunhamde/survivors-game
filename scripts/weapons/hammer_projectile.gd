@@ -25,14 +25,8 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if not Hittable.is_target(body):
 		return
-	var amount := damage
-	if source != null and source.is_id(&"ashbringer"):
-		if body.has_method("health_ratio") and body.health_ratio() <= 0.35 and "health" in body:
-			amount = maxi(amount, int(body.health))
 	if source != null:
-		source.deal_to(body, amount)
+		source.deal_to(body, damage)
 	else:
-		body.take_damage(amount)
-	if source != null and source.is_id(&"ashbringer"):
-		source.spawn_zone(global_position, 36.0, 1, damage, {"show_hammer": false})
+		body.take_damage(damage)
 	queue_free()

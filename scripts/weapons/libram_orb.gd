@@ -3,9 +3,7 @@ extends Area2D
 var damage: int = 10
 var source: WeaponBase
 var hit_interval: float = 0.45
-var linger: bool = false
 var _hit_cd: Dictionary = {}
-var _linger_cd: float = 0.0
 
 
 func _ready() -> void:
@@ -27,7 +25,6 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	_linger_cd = maxf(0.0, _linger_cd - delta)
 	var expired: Array = []
 	for key in _hit_cd.keys():
 		_hit_cd[key] = float(_hit_cd[key]) - delta
@@ -54,6 +51,3 @@ func _try_hit(body: Node2D) -> void:
 		source.deal_to(body, damage)
 	else:
 		body.take_damage(damage)
-	if linger and source != null and _linger_cd <= 0.0:
-		_linger_cd = 0.35
-		source.spawn_zone(global_position, 22.0, 1, -1, {"show_hammer": false})

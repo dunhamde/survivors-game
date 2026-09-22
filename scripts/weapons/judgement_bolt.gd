@@ -5,11 +5,8 @@ var damage: int = 14
 var lifetime: float = 0.7
 var pierce: int = 2
 var direction: Vector2 = Vector2.RIGHT
-var explode: bool = false
-var explode_radius: float = 40.0
 var source: WeaponBase
 var _hit: Dictionary = {}
-var _done: bool = false
 
 
 func _ready() -> void:
@@ -26,8 +23,8 @@ func _ready() -> void:
 	rect.size = Vector2(16, 8)
 	shape.shape = rect
 	add_child(shape)
-	var timer := get_tree().create_timer(lifetime)
-	timer.timeout.connect(_expire)
+	var timer := get_tree().create_timer(lifetime, false)
+	timer.timeout.connect(queue_free)
 
 
 func _physics_process(delta: float) -> void:
@@ -44,13 +41,4 @@ func _on_body_entered(body: Node2D) -> void:
 		body.take_damage(damage)
 	pierce -= 1
 	if pierce < 0:
-		_expire()
-
-
-func _expire() -> void:
-	if _done or not is_instance_valid(self):
-		return
-	_done = true
-	if explode and source != null:
-		source.spawn_zone(global_position, explode_radius, 1, -1, {"show_hammer": false})
-	queue_free()
+		queue_free()

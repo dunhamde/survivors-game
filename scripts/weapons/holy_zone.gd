@@ -5,9 +5,6 @@ var radius: float = 36.0
 var pulses_left: int = 3
 var pulse_interval: float = 0.5
 var source: WeaponBase
-var knockback_strength: float = 0.0
-var pull_strength: float = 0.0
-var heal_amount: int = 0
 var show_hammer: bool = false
 
 var _wait: float = 1.0
@@ -82,7 +79,6 @@ func _apply_radius() -> void:
 func _pulse() -> void:
 	if _ring != null:
 		_ring.modulate = Color(1.15, 1.0, 0.7, 1.0)
-	var hit_any := false
 	for body in get_overlapping_bodies():
 		if not Hittable.is_target(body):
 			continue
@@ -90,13 +86,6 @@ func _pulse() -> void:
 			source.deal_to(body, damage)
 		else:
 			body.take_damage(damage)
-		hit_any = true
-		if knockback_strength > 0.0 and body.has_method("apply_knockback"):
-			body.apply_knockback(global_position, knockback_strength)
-		if pull_strength > 0.0 and body.has_method("apply_pull"):
-			body.apply_pull(global_position, pull_strength)
-	if hit_any and heal_amount > 0 and source != null and source.player != null and source.player.has_method("heal"):
-		source.player.heal(heal_amount)
 
 
 func _finish_soon() -> void:

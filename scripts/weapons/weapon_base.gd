@@ -31,10 +31,6 @@ func weapon_id() -> StringName:
 	return data.id if data != null else &""
 
 
-func is_id(id_value: StringName) -> bool:
-	return data != null and data.id == id_value
-
-
 func current_damage() -> int:
 	return int(data.base_damage + data.damage_per_level * float(level - 1))
 

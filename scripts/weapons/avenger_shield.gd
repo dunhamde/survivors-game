@@ -24,17 +24,10 @@ func _throw(target: Node2D) -> void:
 	shield.global_position = global_position
 	shield.damage = current_damage()
 	shield.speed = 210.0 + float(level) * 10.0
-	shield.bounces = _bounce_count()
+	shield.bounces = 2 + int((level - 1) / 2)
 	shield.target = target
 	shield.source = self
-	shield.leave_puddle = is_id(&"truthguard")
 	shield.radius = 8.0 + current_area() * 0.08
 	var aim := global_position.direction_to(target.global_position)
 	shield.direction = aim if aim != Vector2.ZERO else Vector2.RIGHT
 	entities().add_child(shield)
-
-
-func _bounce_count() -> int:
-	if is_id(&"truthguard"):
-		return 5
-	return 2 + int((level - 1) / 2)

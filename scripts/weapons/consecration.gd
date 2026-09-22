@@ -81,17 +81,10 @@ func _pulse() -> void:
 	_wave_playing = true
 	if _wave != null:
 		_wave.visible = true
-	var hit_any := false
-	var holy_ground := is_id(&"holy_ground")
 	for body in hitbox.get_overlapping_bodies():
 		if not Hittable.is_target(body):
 			continue
 		deal_to(body, current_damage())
-		hit_any = true
-		if holy_ground and body.has_method("apply_knockback"):
-			body.apply_knockback(global_position, 90.0)
-	if hit_any and holy_ground and player != null and player.has_method("heal"):
-		player.heal(2)
 
 
 func _tick_visuals(delta: float) -> void:

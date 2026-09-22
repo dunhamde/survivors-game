@@ -16,21 +16,8 @@ func _physics_process(delta: float) -> void:
 	if player.has_method("play_attack"):
 		player.play_attack(aim if aim != Vector2.ZERO else Vector2.RIGHT)
 	for target in targets:
-		_cast_chain(target)
+		_spawn_bolt(player, target)
 	cooldown = current_cooldown()
-
-
-func _cast_chain(start: Node2D) -> void:
-	var hops := 5 if is_id(&"beacon_of_light") else 1
-	var exclude: Dictionary = {}
-	var origin: Node2D = player
-	var current := start
-	while current != null and hops > 0:
-		_spawn_bolt(origin, current)
-		exclude[current] = true
-		hops -= 1
-		origin = current
-		current = nearest_target(origin.global_position, exclude, current_area() * 1.2)
 
 
 func _spawn_bolt(from_node: Node2D, target: Node2D) -> void:

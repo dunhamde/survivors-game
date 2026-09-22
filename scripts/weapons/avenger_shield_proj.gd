@@ -9,7 +9,6 @@ var bounces: int = 2
 var direction: Vector2 = Vector2.RIGHT
 var target: Node2D
 var source: WeaponBase
-var leave_puddle: bool = false
 var radius: float = 9.0
 var _ignore: Dictionary = {}
 var _trail
@@ -73,20 +72,11 @@ func _on_body_entered(body: Node2D) -> void:
 	else:
 		body.take_damage(damage)
 	if bounces <= 0:
-		_finish(true)
+		queue_free()
 		return
 	bounces -= 1
 	target = null
 	if source != null:
 		target = source.nearest_target(global_position, _ignore)
 	if target == null:
-		_finish(leave_puddle)
-
-
-func _finish(drop_puddle: bool) -> void:
-	if drop_puddle and source != null:
-		source.spawn_zone(global_position, 34.0, 3, -1, {
-			"show_hammer": false,
-			"pulse_interval": 0.4,
-		})
-	queue_free()
+		queue_free()

@@ -30,18 +30,3 @@ func _swing() -> void:
 		slash.damage = current_damage()
 		slash.source = self
 		entities().add_child(slash)
-	if is_id(&"wake_of_ashes"):
-		_wake()
-
-
-func _wake() -> void:
-	var radius := current_area()
-	for target in Hittable.all_nodes(get_tree()):
-		if global_position.distance_to(target.global_position) > radius:
-			continue
-		if target.has_method("apply_pull"):
-			target.apply_pull(global_position, 150.0)
-	spawn_zone(global_position, radius, 1, -1, {
-		"show_hammer": false,
-		"pull_strength": 40.0,
-	})

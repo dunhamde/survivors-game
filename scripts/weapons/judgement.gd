@@ -29,8 +29,6 @@ func _fire(direction: Vector2) -> void:
 	bolt.direction = direction
 	bolt.damage = current_damage()
 	bolt.speed = 280.0 + float(level) * 12.0
-	bolt.pierce = 99 if is_id(&"greater_judgement") else 1 + level
-	bolt.explode = is_id(&"greater_judgement")
-	bolt.explode_radius = current_area()
+	bolt.pierce = 1 + level
 	bolt.source = self
 	entities().add_child(bolt)
