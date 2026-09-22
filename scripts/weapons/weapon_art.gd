@@ -11,6 +11,8 @@ static func texture(kind: StringName) -> Texture2D:
 	match kind:
 		&"shield":
 			img = _shield()
+		&"shield_glow":
+			img = _shield_glow()
 		&"libram":
 			img = _libram()
 		&"judgement":
@@ -25,34 +27,66 @@ static func texture(kind: StringName) -> Texture2D:
 
 
 static func _shield() -> Image:
-	var img := Image.create(16, 18, false, Image.FORMAT_RGBA8)
+	# A round, blue-steel shield with a raised gold rim and holy cross.
+	# The 20x23 canvas is approximately 25% larger in each dimension.
+	var rows := [
+		"                    ",
+		"      KKKKKKKK      ",
+		"     KKYYYYYYKK     ",
+		"    KYYYWHHWYYYK    ",
+		"   KYYWWbbbbWWYYK   ",
+		"  KYYWbbbbbbbbWYGK  ",
+		"  KYWbbCCHHCCbbSGK  ",
+		" KYYWbCCgYYgCCbSGGK ",
+		" KYWbbCCgYYgCBbbSGK ",
+		" KYWbCCgYYYYgBBbSGK ",
+		" KYWbggYYYYYYggbSGK ",
+		" KYWbYHHHHHHHHYbSGK ",
+		" KYWbggYYYYYYggbSGK ",
+		" KYWbCCgYYYYgBBbSGK ",
+		" KYWbbCBgYYgBBbbSGK ",
+		" KYYWbBBgYYgBBbSGGK ",
+		"  KYWbbBBGGBBbbSGK  ",
+		"  KYGSbbbbbbbbSGGK  ",
+		"   KGGSSbbbbSSGGK   ",
+		"    KGGGSYYSGGGK    ",
+		"     KKGGGGGGKK     ",
+		"      KKKKKKKK      ",
+		"                    ",
+	]
+	var colors := {
+		"K": Color("303746"), # Dark silhouette
+		"G": Color("8b672e"), # Shaded gold rim
+		"Y": Color("d7b454"), # Lit gold and emblem
+		"g": Color("9b722f"), # Emblem bevel
+		"H": Color("fff0ae"), # Holy highlight
+		"W": Color("dce8e8"), # Silver edge
+		"S": Color("71879b"), # Shaded steel edge
+		"b": Color("415a88"), # Blue border
+		"C": Color("8aa9c6"), # Lit blue face
+		"B": Color("2d416c"), # Shaded blue face
+	}
+	var img := Image.create(20, 23, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
-	var steel := Color("c8d0dc")
-	var gold := Color("d4b43c")
-	var gold_l := Color("f0e090")
-	var rim := Color("6a5a28")
-	for y in 18:
-		var half := 3
-		if y >= 2 and y < 6:
-			half = 5
-		elif y >= 6 and y < 12:
-			half = 6
-		elif y >= 12 and y < 15:
-			half = 4
-		elif y >= 15:
-			half = 2
-		for x in range(8 - half, 8 + half):
-			img.set_pixel(x, y, steel)
-	for x in range(3, 13):
-		img.set_pixel(x, 1, rim)
-	for y in range(2, 16):
-		img.set_pixel(2, y, rim)
-		img.set_pixel(13, y, rim)
-	for y in range(3, 15):
-		img.set_pixel(7, y, gold)
-		img.set_pixel(8, y, gold_l)
-	for x in range(5, 11):
-		img.set_pixel(x, 8, gold)
+	for y in rows.size():
+		var row: String = rows[y]
+		for x in row.length():
+			var pixel := row.substr(x, 1)
+			if pixel != " ":
+				img.set_pixel(x, y, colors[pixel])
+	return img
+
+
+static func _shield_glow() -> Image:
+	var size := 48
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var center := Vector2(float(size - 1) * 0.5, float(size - 1) * 0.5)
+	for y in size:
+		for x in size:
+			var distance := Vector2(float(x), float(y)).distance_to(center)
+			var rim := exp(-pow((distance - 11.0) / 4.5, 2.0)) * 0.23
+			var haze := exp(-pow((distance - 11.0) / 9.0, 2.0)) * 0.07
+			img.set_pixel(x, y, Color(1.0, 0.88, 0.55, rim + haze))
 	return img
 
 
