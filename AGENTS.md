@@ -2,7 +2,8 @@
 
 ## Branch workflow
 
-- Start each new chat on its own feature branch before changing project files. Use `codex/<short-chat-topic>` for Codex chats. Reuse that branch for fixes and features requested later in the same chat.
+- Start each new coding chat in its own worktree and feature branch before changing project files. Use `codex/<short-chat-topic>` for Codex chats. Reuse that worktree and branch for fixes and features requested later in the same chat.
+- Never let two active chats or agents edit the same worktree. Prefer a Codex-managed worktree when starting a new Codex chat; otherwise create a Git worktree for its branch. Keep the main checkout available for review and integration when practical.
 - When possible, fetch `origin` first and branch from the current `origin/master`. If the remote cannot be reached, branch from the latest locally known `origin/master` and tell the user it could be stale.
 - Commit and push completed work to the chat branch. Do not push directly to `master`, mix in unrelated changes, or merge the chat branch until the user asks to merge it.
 

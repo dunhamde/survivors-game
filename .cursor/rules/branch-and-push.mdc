@@ -1,20 +1,21 @@
 ---
-description: Keep each chat's changes on its own feature branch
+description: Give each coding chat its own worktree and feature branch
 alwaysApply: true
 ---
 
-# Per-chat branch workflow
+# Per-chat worktree and branch workflow
 
-For each new chat involving project changes, create one feature branch and keep all fixes and features related to that chat on it. This repo opts in to committing and pushing completed work on that branch without a separate request.
+For each new chat involving project changes, create one worktree and feature branch. Keep all fixes and features related to that chat there. This repo opts in to committing and pushing completed work on that branch without a separate request.
 
 ## Before editing
 1. Fetch `origin` when available. Start from the latest `origin/master`; if the remote is unavailable, use the locally known `origin/master` and disclose that it may be stale.
-2. Before changing files, create and check out a branch named `cursor/<short-chat-topic>` for a Cursor chat, or `codex/<short-chat-topic>` for a Codex chat. If this chat already has a branch, keep using it for follow-up requests.
-3. Stage only files related to this chat. Leave unrelated dirty files and secrets unstaged.
+2. Before changing files, create a separate worktree and branch named `cursor/<short-chat-topic>` for a Cursor chat, or `codex/<short-chat-topic>` for a Codex chat. Prefer a Codex-managed worktree for Codex chats; otherwise use `git worktree add`.
+3. Reuse this chat's worktree and branch for follow-up requests. Never let two active chats or agents edit the same worktree.
+4. Stage only files related to this chat. Leave unrelated dirty files and secrets unstaged.
 
 ## After completing work in the chat
 1. Commit the relevant files with a concise message and push the chat branch with `git push -u origin HEAD`.
-2. Keep using the same branch for later requests in this chat. Open or update a PR when appropriate, but merge only when the user asks to merge this chat's branch.
+2. Keep using the same worktree and branch for later requests in this chat. Open or update a PR when appropriate, but merge only when the user asks to merge this chat's branch.
 3. Tell the user the branch name and whether it has been pushed.
 
 ## Never
