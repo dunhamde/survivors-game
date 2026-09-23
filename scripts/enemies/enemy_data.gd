@@ -14,6 +14,8 @@ extends Resource
 @export var sheet_rows: int = 1
 @export var sheet_cols_are_dirs: bool = false
 @export var walk_frames: int = 5
+@export var attack_row: int = -1
+@export var attack_frames: int = 0
 @export var death_row: int = 9
 @export var death_frames: int = 5
 ## Hit-react row when sheet columns are facings. Prepended to death only; surviving hits use the red flash.

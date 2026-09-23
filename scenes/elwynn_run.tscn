@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/run/run_controller.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/run/elwynn_map.gd" id="2"]
@@ -6,10 +6,12 @@
 [ext_resource type="Script" path="res://scripts/run/wave_director.gd" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/hogger.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/troll_headhunter.tscn" id="17"]
 [ext_resource type="Resource" path="res://data/enemies/skeleton.tres" id="7"]
 [ext_resource type="Resource" path="res://data/enemies/grunt.tres" id="8"]
 [ext_resource type="Resource" path="res://data/enemies/ogre.tres" id="9"]
 [ext_resource type="Resource" path="res://data/enemies/hogger.tres" id="10"]
+[ext_resource type="Resource" path="res://data/enemies/troll_headhunter.tres" id="18"]
 [ext_resource type="Texture2D" path="res://assets/tiles/elwynn/goldshire_silhouette.png" id="11"]
 [ext_resource type="Script" path="res://scripts/ui/level_up_ui.gd" id="12"]
 [ext_resource type="Script" path="res://scripts/virtual_joystick.gd" id="13"]
@@ -107,9 +109,11 @@ y_sort_enabled = false
 [node name="WaveDirector" type="Node2D" parent="."]
 script = ExtResource("4")
 enemy_scene = ExtResource("5")
+troll_scene = ExtResource("17")
 hogger_scene = ExtResource("6")
 skeleton_data = ExtResource("7")
 grunt_data = ExtResource("8")
+troll_data = ExtResource("18")
 ogre_data = ExtResource("9")
 hogger_data = ExtResource("10")
 chest_scene = ExtResource("16")

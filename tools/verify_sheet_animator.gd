@@ -11,6 +11,7 @@ func _init() -> void:
 	_test_skeleton()
 	_test_ogre()
 	_test_grunt()
+	_test_troll()
 	_test_hogger()
 	if _failed > 0:
 		push_error("SheetAnimator parity: %s failed" % _failed)
@@ -159,6 +160,24 @@ func _test_grunt() -> void:
 	_ok(anim.last_col == 2 and anim.last_row == 9, "south death cell 1 (2,9)")
 	anim.show_death_frame(2)
 	_ok(anim.last_col == 4 and anim.last_row == 9, "south death cell 2 (4,9)")
+
+
+func _test_troll() -> void:
+	print("troll headhunter")
+	var data := load("res://data/enemies/troll_headhunter.tres") as EnemyData
+	var anim := SheetAnimator.from_enemy_data(data)
+	_ok(anim.uses_sheet and anim.cols_are_dirs and anim.has_attack(), "directional attack sheet")
+	_ok(anim.sheet_cols == 5 and anim.sheet_rows == 11, "5x11")
+	anim.set_facing_from_vector(Vector2.RIGHT)
+	anim.show_walk_frame(4)
+	_ok(anim.last_row == 4 and anim.last_col == 2, "spear-ready walk")
+	anim.start_attack()
+	anim.show_attack_frame(2)
+	_ok(anim.last_row == 7 and anim.last_col == 2, "full spear thrust")
+	anim.set_facing_from_vector(Vector2.DOWN)
+	anim.start_death()
+	anim.show_death_frame(1)
+	_ok(anim.last_row == 10 and anim.last_col == 4, "south death")
 
 
 func _test_hogger() -> void:

@@ -100,8 +100,8 @@ static func from_enemy_data(data: EnemyData) -> SheetAnimator:
 	anim.cols_are_dirs = data.sheet_cols_are_dirs
 	anim.uses_sheet = data.sheet_cols > 1
 	anim.walk_frames = maxi(1, data.walk_frames)
-	anim.attack_row = -1
-	anim.attack_frames = 0
+	anim.attack_row = data.attack_row
+	anim.attack_frames = maxi(0, data.attack_frames)
 	anim.death_row = data.death_row
 	anim.death_frames = maxi(1, data.death_frames)
 	anim.hit_row = data.hit_row

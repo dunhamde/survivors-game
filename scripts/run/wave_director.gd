@@ -4,9 +4,11 @@ signal boss_spawned(boss: Node)
 signal enemy_killed
 
 @export var enemy_scene: PackedScene
+@export var troll_scene: PackedScene
 @export var hogger_scene: PackedScene
 @export var skeleton_data: EnemyData
 @export var grunt_data: EnemyData
+@export var troll_data: EnemyData
 @export var ogre_data: EnemyData
 @export var hogger_data: EnemyData
 @export var chest_scene: PackedScene
@@ -17,7 +19,7 @@ signal enemy_killed
 
 var elapsed: float = 0.0
 var hogger_spawned: bool = false
-var _cooldowns: Dictionary = {"skeleton": 0.0, "grunt": 0.0, "ogre": 0.0, "chest": 18.0}
+var _cooldowns: Dictionary = {"skeleton": 0.0, "grunt": 0.0, "troll": 0.0, "ogre": 0.0, "chest": 18.0}
 
 
 func _physics_process(delta: float) -> void:
@@ -47,6 +49,12 @@ func _tick_spawns(delta: float, player: Node2D) -> void:
 		if float(_cooldowns["grunt"]) <= 0.0:
 			_spawn_pack(player, grunt_data, 2, cap)
 			_cooldowns["grunt"] = _grunt_interval()
+
+	if elapsed >= ElwynnBeats.TROLLS_AT:
+		_cooldowns["troll"] = float(_cooldowns["troll"]) - delta
+		if float(_cooldowns["troll"]) <= 0.0:
+			_spawn_pack(player, troll_data, 1, cap, troll_scene)
+			_cooldowns["troll"] = 3.4
 
 	if elapsed >= ElwynnBeats.OGRES_AT:
 		_cooldowns["ogre"] = float(_cooldowns["ogre"]) - delta
@@ -99,7 +107,7 @@ func _ogre_interval() -> float:
 
 func spawnable_catalog() -> Array[Dictionary]:
 	var items: Array[Dictionary] = []
-	for raw in [skeleton_data, grunt_data, ogre_data, hogger_data]:
+	for raw in [skeleton_data, grunt_data, troll_data, ogre_data, hogger_data]:
 		var data := raw as EnemyData
 		if data == null:
 			continue
@@ -122,7 +130,8 @@ func spawn_debug(id: StringName) -> void:
 		_spawn_chest(player, 200.0)
 		return
 	var is_hogger := hogger_data != null and hogger_data.id == id
-	var scene := hogger_scene if is_hogger else enemy_scene
+	var is_troll := troll_data != null and troll_data.id == id
+	var scene := hogger_scene if is_hogger else (troll_scene if is_troll else enemy_scene)
 	var data := hogger_data if is_hogger else _data_by_id(id)
 	if scene == null or data == null:
 		return
@@ -140,15 +149,17 @@ func spawn_debug(id: StringName) -> void:
 
 
 func _data_by_id(id: StringName) -> EnemyData:
-	for raw in [skeleton_data, grunt_data, ogre_data]:
+	for raw in [skeleton_data, grunt_data, troll_data, ogre_data]:
 		var data := raw as EnemyData
 		if data != null and data.id == id:
 			return data
 	return null
 
 
-func _spawn_pack(player: Node2D, data: EnemyData, count: int, cap: int) -> void:
-	if data == null or enemy_scene == null:
+func _spawn_pack(player: Node2D, data: EnemyData, count: int, cap: int, scene: PackedScene = null) -> void:
+	if scene == null:
+		scene = enemy_scene
+	if data == null or scene == null:
 		return
 	var parent := get_tree().get_first_node_in_group("entities")
 	if parent == null:
@@ -158,7 +169,7 @@ func _spawn_pack(player: Node2D, data: EnemyData, count: int, cap: int) -> void:
 	for i in count:
 		if alive >= cap:
 			return
-		var enemy := enemy_scene.instantiate() as Enemy
+		var enemy := scene.instantiate() as Enemy
 		var angle := base_angle + randf_range(-0.22, 0.22)
 		var dist := spawn_radius + randf_range(-18.0, 24.0)
 		var desired := player.global_position + Vector2.from_angle(angle) * dist

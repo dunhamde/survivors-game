@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/troll_headhunter.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"troll_headhunter"
+display_name = "Troll Headhunter"
+texture = ExtResource("2")
+max_health = 72
+move_speed = 58.0
+xp_value = 4
+contact_damage = 12
+collision_radius = 14.0
+sheet_cols = 5
+sheet_rows = 11
+sheet_cols_are_dirs = true
+walk_frames = 5
+attack_row = 5
+attack_frames = 4
+death_row = 9
+death_frames = 2
+death_cells = Array[Vector2i]([Vector2i(0, 9), Vector2i(0, 10)])
+death_cells_south = Array[Vector2i]([Vector2i(4, 9), Vector2i(4, 10)])
