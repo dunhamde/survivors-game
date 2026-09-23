@@ -11,6 +11,10 @@
 
 This is a **Godot 4.7 (GDScript)** survivors-style action prototype. There is no package manager, build step, or test framework; the Godot engine is the only dependency.
 
+### Sprite sheets
+
+Before adding or changing a character sprite sheet, follow [the sprite sheet workflow](docs/spritesheet-workflow.md). It covers atlas layout, visible scale, frame alignment, Godot resource wiring, Anim Preview, and visual checks.
+
 ### Running the game
 
 - Run `godot --path .` from the repo root. The main scene is `res://scenes/main.tscn`, configured in `project.godot`.
