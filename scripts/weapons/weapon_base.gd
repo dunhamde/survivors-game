@@ -35,9 +35,9 @@ func current_damage() -> int:
 	return int(data.base_damage + data.damage_per_level * float(level - 1))
 
 
-func current_cooldown() -> float:
+func current_cooldown(apply_attack_speed: bool = true) -> float:
 	var wait := data.base_cooldown + data.cooldown_per_level * float(level - 1)
-	return maxf(0.12, wait * _cooldown_mult())
+	return maxf(0.12, wait * (_cooldown_mult() if apply_attack_speed else 1.0))
 
 
 func current_area() -> float:

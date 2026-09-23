@@ -39,7 +39,7 @@ func _ready() -> void:
 	circle.radius = radius
 	shape.shape = circle
 	add_child(shape)
-	var timer := get_tree().create_timer(lifetime)
+	var timer := get_tree().create_timer(lifetime, false)
 	timer.timeout.connect(queue_free)
 
 

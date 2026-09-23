@@ -9,6 +9,7 @@ var show_hammer: bool = false
 
 var _wait: float = 1.0
 var _started: bool = false
+var _visual_time: float = 0.0
 var _ring: Sprite2D
 var _hammer: Sprite2D
 var _shape: CollisionShape2D
@@ -54,9 +55,10 @@ func _first_pulse() -> void:
 func _physics_process(delta: float) -> void:
 	if not _started:
 		return
+	_visual_time += delta
 	_wait -= delta
 	if _ring != null:
-		var pulse := 0.75 + 0.25 * sin(Time.get_ticks_msec() * 0.012)
+		var pulse := 0.75 + 0.25 * sin(_visual_time * 12.0)
 		_ring.modulate.a = pulse
 	if _wait > 0.0 or pulses_left <= 0:
 		return
@@ -93,5 +95,5 @@ func _finish_soon() -> void:
 	if tree == null:
 		queue_free()
 		return
-	var timer := tree.create_timer(0.22)
+	var timer := tree.create_timer(0.22, false)
 	timer.timeout.connect(queue_free)

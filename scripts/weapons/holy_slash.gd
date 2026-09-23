@@ -8,7 +8,7 @@ var _hit: Dictionary = {}
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	call_deferred("_hit_overlaps")
-	var timer := get_tree().create_timer(0.16)
+	var timer := get_tree().create_timer(0.16, false)
 	timer.timeout.connect(queue_free)
 
 

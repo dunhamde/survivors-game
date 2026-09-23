@@ -1,7 +1,12 @@
+@tool
 class_name WeaponArt
 extends RefCounted
 
 static var _cache: Dictionary = {}
+
+
+static func clear_cache() -> void:
+	_cache.clear()
 
 
 static func texture(kind: StringName) -> Texture2D:
@@ -9,6 +14,10 @@ static func texture(kind: StringName) -> Texture2D:
 		return _cache[kind]
 	var img: Image
 	match kind:
+		&"wrath_hammer":
+			img = _wrath_hammer()
+		&"wrath_hammer_glow":
+			img = _wrath_hammer_glow()
 		&"shield":
 			img = _shield()
 		&"shield_glow":
@@ -24,6 +33,77 @@ static func texture(kind: StringName) -> Texture2D:
 	var tex := ImageTexture.create_from_image(img)
 	_cache[kind] = tex
 	return tex
+
+
+static func _wrath_hammer() -> Image:
+	# Side-on warhammer: the head leads the throw, with a bright rune in its face.
+	var img := Image.create(32, 28, false, Image.FORMAT_RGBA8)
+	img.fill(Color.TRANSPARENT)
+	var ink := Color("273143")
+	var shadow := Color("435779")
+	var steel := Color("7d9eba")
+	var light := Color("c8e4ed")
+	var gold_dark := Color("80602b")
+	var gold := Color("d9ae4b")
+	var gold_light := Color("ffdc7a")
+	var leather := Color("705039")
+	var cyan := Color("67d9f5")
+	var white := Color("efffff")
+	# Leather haft, pommel, and the gold collar at the head.
+	img.fill_rect(Rect2i(2, 12, 18, 5), ink)
+	img.fill_rect(Rect2i(4, 13, 16, 3), leather)
+	img.fill_rect(Rect2i(5, 13, 14, 1), gold_dark)
+	for x in [7, 11, 15]:
+		img.fill_rect(Rect2i(x, 13, 2, 3), gold)
+		img.set_pixel(x, 13, gold_light)
+	img.fill_rect(Rect2i(1, 10, 5, 9), ink)
+	img.fill_rect(Rect2i(2, 11, 3, 7), gold_dark)
+	img.fill_rect(Rect2i(2, 12, 2, 4), gold)
+	img.set_pixel(2, 12, gold_light)
+	img.fill_rect(Rect2i(15, 9, 6, 11), ink)
+	img.fill_rect(Rect2i(16, 10, 4, 9), gold_dark)
+	img.fill_rect(Rect2i(17, 11, 3, 7), gold)
+	img.fill_rect(Rect2i(17, 12, 1, 4), gold_light)
+	# Broad beveled head with stepped striking faces and a dark outline.
+	img.fill_rect(Rect2i(20, 1, 8, 26), ink)
+	img.fill_rect(Rect2i(18, 4, 12, 20), ink)
+	img.fill_rect(Rect2i(17, 7, 14, 14), ink)
+	img.fill_rect(Rect2i(20, 2, 7, 24), gold_dark)
+	img.fill_rect(Rect2i(18, 5, 11, 18), gold_dark)
+	img.fill_rect(Rect2i(19, 6, 10, 16), steel)
+	img.fill_rect(Rect2i(21, 3, 5, 22), steel)
+	img.fill_rect(Rect2i(22, 4, 4, 19), light)
+	img.fill_rect(Rect2i(18, 8, 2, 12), gold)
+	img.fill_rect(Rect2i(28, 8, 2, 12), gold)
+	img.fill_rect(Rect2i(20, 3, 1, 22), gold)
+	img.fill_rect(Rect2i(26, 3, 1, 22), gold_dark)
+	img.fill_rect(Rect2i(21, 5, 1, 18), shadow)
+	img.fill_rect(Rect2i(26, 6, 2, 16), shadow)
+	img.fill_rect(Rect2i(19, 6, 8, 1), gold_light)
+	img.fill_rect(Rect2i(19, 21, 8, 1), gold_dark)
+	# Inlaid lightning cross, gold rivets, and a cool white glint.
+	img.fill_rect(Rect2i(23, 8, 2, 12), cyan)
+	img.fill_rect(Rect2i(21, 12, 7, 3), cyan)
+	img.fill_rect(Rect2i(23, 10, 1, 8), white)
+	img.fill_rect(Rect2i(22, 13, 5, 1), white)
+	img.set_pixel(19, 9, gold_light)
+	img.set_pixel(19, 18, gold_light)
+	img.set_pixel(28, 9, gold_light)
+	img.set_pixel(28, 18, gold_light)
+	img.set_pixel(22, 4, white)
+	img.set_pixel(23, 3, light)
+	return img
+
+
+static func _wrath_hammer_glow() -> Image:
+	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	for y in 64:
+		for x in 64:
+			var d := Vector2(float(x) - 36.0, float(y) - 31.5)
+			var r := sqrt(pow(d.x / 22.0, 2.0) + pow(d.y / 24.0, 2.0))
+			var alpha := exp(-r * r * 2.3) * 0.4
+			img.set_pixel(x, y, Color(0.22, 0.69, 1.0, alpha))
+	return img
 
 
 static func _shield() -> Image:

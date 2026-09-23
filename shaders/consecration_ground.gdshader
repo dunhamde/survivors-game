@@ -2,6 +2,7 @@ shader_type canvas_item;
 render_mode blend_mix, unshaded;
 
 uniform float pulse : hint_range(0.0, 1.0) = 0.0;
+uniform float effect_time = 0.0;
 uniform float wave_progress : hint_range(0.0, 1.0) = 1.0;
 uniform float wave_active : hint_range(0.0, 1.0) = 0.0;
 uniform float radius_uv : hint_range(0.2, 0.5) = 0.42;
@@ -15,7 +16,7 @@ void fragment() {
 	float ash = pack.g;
 	float pool = pack.b;
 
-	float flicker = 0.82 + 0.18 * step(0.5, fract(TIME * 3.4 + ash * 3.0));
+	float flicker = 0.82 + 0.18 * step(0.5, fract(effect_time * 3.4 + ash * 3.0));
 	float heat = max(seam, pool * 0.8);
 
 	float wave_r = radius_uv * (1.0 - (1.0 - wave_progress) * (1.0 - wave_progress));

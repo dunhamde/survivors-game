@@ -2,6 +2,7 @@ shader_type canvas_item;
 render_mode blend_add, unshaded;
 
 uniform float progress : hint_range(0.0, 1.0) = 0.0;
+uniform float effect_time = 0.0;
 uniform float radius_uv : hint_range(0.2, 0.5) = 0.42;
 uniform float intensity : hint_range(0.0, 2.0) = 1.0;
 
@@ -42,7 +43,7 @@ void fragment() {
 
 	float u = progress;
 	float eased = 1.0 - (1.0 - u) * (1.0 - u);
-	float n = fbm(vec2(ang * 2.4, u * 6.0 + TIME * 2.5));
+	float n = fbm(vec2(ang * 2.4, u * 6.0 + effect_time * 2.5));
 	float jag = (n - 0.5) * 0.034;
 	float wave_r = eased * radius_uv + jag;
 
@@ -52,7 +53,7 @@ void fragment() {
 	float core = exp(-d * d * 2400.0);
 	float sheet = exp(-abs(d) * 16.0) * (0.55 + 0.45 * n);
 
-	float tongues = pow(max(0.0, 1.0 - abs(sin(ang * 9.0 + n * 6.0 + TIME * 8.0))), 4.0);
+	float tongues = pow(max(0.0, 1.0 - abs(sin(ang * 9.0 + n * 6.0 + effect_time * 8.0))), 4.0);
 	tongues *= smoothstep(0.05, 0.0, d) * smoothstep(-0.07, -0.01, d);
 
 	float appear = smoothstep(0.0, 0.06, u);

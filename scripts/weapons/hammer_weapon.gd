@@ -2,19 +2,27 @@ extends WeaponBase
 
 const HAMMER_SCENE := preload("res://scenes/weapons/hammer_projectile.tscn")
 
+var _active_hammers: Array[Area2D] = []
+
 
 func _physics_process(delta: float) -> void:
 	if not is_player_alive():
 		return
+	for i in range(_active_hammers.size() - 1, -1, -1):
+		if not is_instance_valid(_active_hammers[i]):
+			_active_hammers.remove_at(i)
 	cooldown = maxf(0.0, cooldown - delta)
 	if cooldown > 0.0:
 		return
-	var targets := _pick_targets(projectile_count())
+	var slots := maxi(1, data.base_count + _command_bonus()) - _active_hammers.size()
+	if slots <= 0:
+		return
+	var targets := _pick_targets(slots)
 	if targets.is_empty():
 		return
 	for target in targets:
 		_spawn(target)
-	cooldown = current_cooldown()
+	cooldown = current_cooldown(false)
 
 
 func _pick_targets(count: int) -> Array[Node2D]:
@@ -52,3 +60,4 @@ func _spawn(target: Node2D) -> void:
 		aim = Vector2.RIGHT
 	hammer.direction = aim
 	entities().add_child(hammer)
+	_active_hammers.append(hammer)

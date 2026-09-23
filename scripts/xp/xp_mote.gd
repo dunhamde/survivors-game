@@ -1,5 +1,7 @@
 extends Area2D
 
+const MAGNET_RANGE_MULTIPLIER := 2.5
+
 @export var amount: int = 2
 @export var pull_speed: float = 180.0
 @export var pull_accel: float = 520.0
@@ -32,7 +34,7 @@ func _try_magnet(delta: float) -> void:
 		return
 	var radius := 0.0
 	if "magnetism" in _player:
-		radius = float(_player.magnetism)
+		radius = float(_player.magnetism) * MAGNET_RANGE_MULTIPLIER
 	if not _pulled:
 		if radius <= 0.0:
 			return

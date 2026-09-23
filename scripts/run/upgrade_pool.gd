@@ -137,7 +137,7 @@ static func _maybe_seals(pool: Array[Dictionary], player: Node) -> void:
 		pool.append({
 			"id": "infusion_of_light",
 			"title": "Infusion of Light",
-			"desc": "Weapons fire 18% faster.",
+			"desc": "Abilities trigger 18% faster, except Shield and Hammer of Wrath.",
 		})
 
 

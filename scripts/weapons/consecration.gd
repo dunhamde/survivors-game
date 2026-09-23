@@ -27,6 +27,7 @@ var _pulse_u: float = 0.0
 var _wave_u: float = 1.0
 var _wave_playing: bool = false
 var _dead_fade: float = 1.0
+var _visual_time: float = 0.0
 
 
 func setup(p_data: WeaponData, p_player: CharacterBody2D) -> void:
@@ -48,6 +49,7 @@ func _exit_tree() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_visual_time += delta
 	_sync_fx()
 	if not is_player_alive():
 		_tick_dead(delta)
@@ -113,11 +115,13 @@ func _tick_dead(delta: float) -> void:
 
 func _push_shader_params() -> void:
 	if _ground_mat != null:
+		_ground_mat.set_shader_parameter("effect_time", _visual_time)
 		_ground_mat.set_shader_parameter("pulse", _pulse_u)
 		_ground_mat.set_shader_parameter("wave_progress", _wave_u)
 		_ground_mat.set_shader_parameter("wave_active", 1.0 if _wave_playing else 0.0)
 		_ground_mat.set_shader_parameter("radius_uv", CIRCLE_UV)
 	if _wave_mat != null:
+		_wave_mat.set_shader_parameter("effect_time", _visual_time)
 		_wave_mat.set_shader_parameter("progress", _wave_u)
 		_wave_mat.set_shader_parameter("radius_uv", CIRCLE_UV)
 		_wave_mat.set_shader_parameter("intensity", 1.15)
