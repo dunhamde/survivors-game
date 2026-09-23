@@ -245,6 +245,7 @@ func _catalog() -> Array:
 		{"id": "paladin", "name": "Paladin", "data": ""},
 		{"id": "skeleton", "name": "Skeleton", "data": "res://data/enemies/skeleton.tres"},
 		{"id": "grunt", "name": "Grunt", "data": "res://data/enemies/grunt.tres"},
+		{"id": "troll_headhunter", "name": "Troll Headhunter", "data": "res://data/enemies/troll_headhunter.tres"},
 		{"id": "ogre", "name": "Ogre", "data": "res://data/enemies/ogre.tres"},
 		{"id": "hogger", "name": "Hogger", "data": "res://data/enemies/hogger.tres"},
 	]
