@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## Branch workflow
+
+- Start each new chat on its own feature branch before changing project files. Use `codex/<short-chat-topic>` for Codex chats. Reuse that branch for fixes and features requested later in the same chat.
+- When possible, fetch `origin` first and branch from the current `origin/master`. If the remote cannot be reached, branch from the latest locally known `origin/master` and tell the user it could be stale.
+- Commit and push completed work to the chat branch. Do not push directly to `master`, mix in unrelated changes, or merge the chat branch until the user asks to merge it.
+
 ## Cursor Cloud specific instructions
 
 This is a **Godot 4.7 (GDScript)** game — a survivors-style action prototype. There is no package manager, build step, or test framework; the only "dependency" is the Godot engine binary itself. The engine (`godot`, v4.7.1-stable) is installed at `/usr/local/bin/godot`, and the graphics libraries needed for the Forward+ (Vulkan) renderer (`mesa-vulkan-drivers` → software `llvmpipe`, plus `libgl1`/X libs) are installed system-wide. These persist in the VM snapshot; the startup update script only re-installs the engine if it is somehow missing.

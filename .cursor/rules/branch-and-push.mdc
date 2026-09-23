@@ -1,26 +1,22 @@
 ---
-description: Create a feature branch, commit, push, auto-merge to master, then pull locally
+description: Keep each chat's changes on its own feature branch
 alwaysApply: true
 ---
 
-# Feature-branch workflow
+# Per-chat branch workflow
 
-When the user asks for code or project changes in this repo, do not work on `master` (or `main`). This repo opts in to commit, push, and auto-merge on feature branches without a separate "please commit" or "please merge" request.
+For each new chat involving project changes, create one feature branch and keep all fixes and features related to that chat on it. This repo opts in to committing and pushing completed work on that branch without a separate request.
 
 ## Before editing
-1. If HEAD is `master`/`main`, create and check out a new branch named `cursor/<short-kebab-description>`.
-2. If already on a feature branch that matches this request, keep using it.
-3. Call SetActiveBranch after creating or switching branches.
-4. Stage only files from this request. Leave unrelated dirty files (and secrets) unstaged.
+1. Fetch `origin` when available. Start from the latest `origin/master`; if the remote is unavailable, use the locally known `origin/master` and disclose that it may be stale.
+2. Before changing files, create and check out a branch named `cursor/<short-chat-topic>` for a Cursor chat, or `codex/<short-chat-topic>` for a Codex chat. If this chat already has a branch, keep using it for follow-up requests.
+3. Stage only files related to this chat. Leave unrelated dirty files and secrets unstaged.
 
-## After the change is done
-1. Commit the relevant files with a concise message focused on why.
-2. Push the feature branch: `git push -u origin HEAD`.
-3. Open a PR and merge it immediately (`gh pr create`, then `gh pr merge --merge --delete-branch`). Do not wait for the user to test first.
-4. If this session is on the local PC (not a cloud agent VM), check out `master`/`main` and `git pull` so the local tree matches the merge.
-5. Tell the user the branch name, PR URL, and that it is merged.
+## After completing work in the chat
+1. Commit the relevant files with a concise message and push the chat branch with `git push -u origin HEAD`.
+2. Keep using the same branch for later requests in this chat. Open or update a PR when appropriate, but merge only when the user asks to merge this chat's branch.
+3. Tell the user the branch name and whether it has been pushed.
 
 ## Never
-- Do not `git push` to `master` or `main` (merge via GitHub PR only).
-- Do not leave a completed task unmerged on a feature branch.
+- Do not `git push` directly to `master` or `main`.
 - Do not force-push, skip hooks, or amend unless the user explicitly asks.
