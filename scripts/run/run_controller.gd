@@ -33,7 +33,7 @@ var _won: bool = false
 
 
 func _ready() -> void:
-	GameSettings.ensure_loaded()
+	GameSettings.apply_game_speed()
 	_configure_phone_content_scale()
 	end_panel.visible = false
 	boss_wrap.visible = false

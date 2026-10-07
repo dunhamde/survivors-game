@@ -10,6 +10,7 @@ signal spawn_enemy_requested(id: StringName)
 @onready var retry_button: Button = $Center/Row/Panel/Margin/VBox/RetryButton
 @onready var damage_numbers_check: CheckBox = $Center/Row/Panel/Margin/VBox/DamageNumbers
 @onready var fps_check: CheckBox = $Center/Row/Panel/Margin/VBox/ShowFPS
+@onready var game_speed_option: OptionButton = $Center/Row/Panel/Margin/VBox/GameSpeed/Speed
 @onready var dev_button: Button = $Center/Row/Panel/Margin/VBox/DevButton
 @onready var quit_button: Button = $Center/Row/Panel/Margin/VBox/QuitButton
 @onready var hint: Label = $Center/Row/Panel/Margin/VBox/Hint
@@ -31,8 +32,12 @@ func _ready() -> void:
 	if touch:
 		hint.text = "Tap Resume to continue"
 	GameSettings.ensure_loaded()
+	for speed in GameSettings.GAME_SPEEDS:
+		game_speed_option.add_item("%d×" % speed, speed)
+	game_speed_option.item_selected.connect(_on_game_speed_selected)
 	damage_numbers_check.set_pressed_no_signal(GameSettings.show_damage_numbers)
 	fps_check.set_pressed_no_signal(GameSettings.show_fps)
+	game_speed_option.select(GameSettings.GAME_SPEEDS.find(GameSettings.game_speed))
 	resume_button.pressed.connect(func() -> void: toggle_requested.emit())
 	retry_button.pressed.connect(func() -> void: retry_pressed.emit())
 	damage_numbers_check.toggled.connect(_on_damage_numbers_toggled)
@@ -60,6 +65,7 @@ func show_menu() -> void:
 	GameSettings.ensure_loaded()
 	damage_numbers_check.set_pressed_no_signal(GameSettings.show_damage_numbers)
 	fps_check.set_pressed_no_signal(GameSettings.show_fps)
+	game_speed_option.select(GameSettings.GAME_SPEEDS.find(GameSettings.game_speed))
 	_refresh_stats()
 	_show_main()
 
@@ -84,6 +90,10 @@ func _show_dev() -> void:
 
 func _on_damage_numbers_toggled(pressed: bool) -> void:
 	GameSettings.set_show_damage_numbers(pressed)
+
+
+func _on_game_speed_selected(index: int) -> void:
+	GameSettings.set_game_speed(game_speed_option.get_item_id(index))
 
 
 func _on_god_mode_toggled(pressed: bool) -> void:

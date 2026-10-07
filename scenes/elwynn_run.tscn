@@ -427,6 +427,20 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Show FPS counter"
 
+[node name="GameSpeed" type="HBoxContainer" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PauseMenu/Center/Row/Panel/Margin/VBox/GameSpeed"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Game Speed"
+
+[node name="Speed" type="OptionButton" parent="PauseMenu/Center/Row/Panel/Margin/VBox/GameSpeed"]
+custom_minimum_size = Vector2(110, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+
 [node name="DevButton" type="Button" parent="PauseMenu/Center/Row/Panel/Margin/VBox"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
