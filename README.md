@@ -37,7 +37,7 @@ Open the **Weapon Lab** bottom panel beside **Anim Preview**. If it is missing
 in an already-open editor, enable **Weapon Lab** under **Project → Project
 Settings → Plugins** (or reopen the project).
 
-- **Inspect Art:** select any weapon or evolution, its component, and level.
+- **Inspect Art:** select any of the eight base weapons, its component, and level.
   Compare the gameplay camera scale (1.75×, before window scaling) with a
   2×/4×/8× detail view. Switch between checkerboard, dark, and actual Elwynn
   grass; optionally show the Paladin. Drag either view to pan and double-click
@@ -88,7 +88,42 @@ godot --headless --path . --script tools/weapon_lab_smoke.gd --fixed-fps 60
 ## Current slice
 
 - Elwynn Forest map + Goldshire backdrop
-- Paladin with Holy Strike, Consecration, Hammer of Wrath
-- Skeletons, grunts, ogres, and Hogger
+- Paladin with eight base weapons and passive seals
+- Skeletons, grunts, Troll Headhunters, ogres, and animated Hogger
 - XP, level-ups, and upgrade choices
 - Touch controls + GitHub Pages web build
+
+## Fifteen-minute run pacing
+
+Runs target **15 minutes**, including the finale. Grunts join at 2:00, trolls
+at 4:00, and ogres at 6:00. Pressure builds through Encircled (8:00), Horde
+Assault (10:00), and Last Stand (12:00). Each minute has 18 seconds of recovery,
+24 seconds of normal pressure, and an 18-second surge. Packs arrive from changing
+directions, and the late crowd ceiling reaches 480 living enemies (hard cap 500).
+Lowering the ceiling pauses replenishment; it does not delete the current wave.
+Distant non-boss stragglers are recycled without awarding XP or kills.
+
+Hogger arrives at **14:00**. Killing him wins; 15:00 is a balancing target,
+not an automatic victory or forced death. Enemy health and quadratic XP costs
+support the longer run. The initial tuning needs playtesting across builds.
+Pacing values live in `data/waves/elwynn_beats.gd`.
+
+Hogger has **Cleaver Rush** (a locked orange charge lane), **Earthbreaker**
+(a marked slam followed by an expanding damaging ring), and **Warband Roar**
+(marked reinforcements, limited to twelve living summons). At half health he
+enrages, with shorter warnings and a more aggressive charge pattern. Attacks
+have recovery windows; warnings disappear when the player or boss dies.
+The boss ignores displacement so his warnings stay aligned. Use the pause
+menu's Dev enemy spawning option to test Hogger without waiting fourteen minutes.
+God mode makes hits instantly kill enemies, so leave it off to review the fight.
+
+His generated source and reproducible packer are
+`assets/sprites/enemies/hogger_sheet_raw.png` and `tools/process_hogger_sheet.py`.
+The source contains ten rows, so his atlas uses **5×10 cells**, with five walk
+frames, three cleaver frames, and two death frames. It appears in Anim Preview.
+
+Feature checks:
+
+```bash
+godot --headless --path . --script tools/verify_run_pacing.gd
+```

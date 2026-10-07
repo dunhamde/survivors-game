@@ -88,13 +88,22 @@ func densest_targets(count: int) -> Array[Node2D]:
 		return []
 	var scored: Array[Dictionary] = []
 	var neighbor_r := 56.0 * 56.0
+	# Count only targets in neighbouring spatial cells. A full all-pairs scan
+	# stalls area weapons when the late-run horde reaches hundreds of bodies.
+	var buckets: Dictionary = {}
+	for enemy in enemies:
+		var cell := Vector2i(floori(enemy.global_position.x / 56.0), floori(enemy.global_position.y / 56.0))
+		if not buckets.has(cell):
+			buckets[cell] = []
+		buckets[cell].append(enemy)
 	for enemy in enemies:
 		var neighbors := 0
-		for other in enemies:
-			if other == enemy:
-				continue
-			if enemy.global_position.distance_squared_to(other.global_position) <= neighbor_r:
-				neighbors += 1
+		var cell := Vector2i(floori(enemy.global_position.x / 56.0), floori(enemy.global_position.y / 56.0))
+		for y in range(-1, 2):
+			for x in range(-1, 2):
+				for other: Node2D in buckets.get(cell + Vector2i(x, y), []):
+					if other != enemy and enemy.global_position.distance_squared_to(other.global_position) <= neighbor_r:
+						neighbors += 1
 		scored.append({"node": enemy, "score": neighbors, "dist": global_position.distance_squared_to(enemy.global_position)})
 	scored.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if int(a.score) != int(b.score):

@@ -20,6 +20,9 @@ signal enemy_killed
 var elapsed: float = 0.0
 var hogger_spawned: bool = false
 var _cooldowns: Dictionary = {"skeleton": 0.0, "grunt": 0.0, "troll": 0.0, "ogre": 0.0, "chest": 18.0}
+var _alive: int = 0
+var _cleanup_timer: float = 0.0
+var _spawn_order: int = 0
 
 
 func _physics_process(delta: float) -> void:
@@ -30,37 +33,42 @@ func _physics_process(delta: float) -> void:
 		return
 
 	elapsed += delta
+	_alive = get_tree().get_nodes_in_group("enemies").size()
+	_cleanup_timer -= delta
+	if _cleanup_timer <= 0.0:
+		_cleanup_timer = 2.0
+		_recycle_distant_enemies(player)
 	_tick_spawns(delta, player)
 
 	if elapsed >= hogger_time and not hogger_spawned:
-		hogger_spawned = true
 		_spawn_hogger(player)
 
 
 func _tick_spawns(delta: float, player: Node2D) -> void:
 	var cap := _alive_cap()
-	_cooldowns["skeleton"] = float(_cooldowns["skeleton"]) - delta
-	if float(_cooldowns["skeleton"]) <= 0.0:
-		_spawn_pack(player, skeleton_data, 1, cap)
-		_cooldowns["skeleton"] = _skeleton_interval()
-
-	if elapsed >= ElwynnBeats.GRUNTS_AT:
-		_cooldowns["grunt"] = float(_cooldowns["grunt"]) - delta
-		if float(_cooldowns["grunt"]) <= 0.0:
-			_spawn_pack(player, grunt_data, 2, cap)
-			_cooldowns["grunt"] = _grunt_interval()
-
-	if elapsed >= ElwynnBeats.TROLLS_AT:
-		_cooldowns["troll"] = float(_cooldowns["troll"]) - delta
-		if float(_cooldowns["troll"]) <= 0.0:
-			_spawn_pack(player, troll_data, 1, cap, troll_scene)
-			_cooldowns["troll"] = 3.4
-
-	if elapsed >= ElwynnBeats.OGRES_AT:
-		_cooldowns["ogre"] = float(_cooldowns["ogre"]) - delta
-		if float(_cooldowns["ogre"]) <= 0.0:
-			_spawn_pack(player, ogre_data, 1, cap)
-			_cooldowns["ogre"] = _ogre_interval()
+	var stage: Array = ElwynnBeats.STAGES[ElwynnBeats.stage_index(elapsed)]
+	var pressure := ElwynnBeats.pressure(elapsed)
+	if hogger_spawned:
+		pressure *= 0.55
+	var late := clampf((elapsed - ElwynnBeats.OGRES_AT) / 480.0, 0.0, 1.0)
+	var families := [
+		["skeleton", skeleton_data, int(stage[2]), float(stage[3]), 0.0, enemy_scene],
+		["grunt", grunt_data, 2 + roundi(late * 4.0), lerpf(2.4, 0.8, late), ElwynnBeats.GRUNTS_AT, enemy_scene],
+		["troll", troll_data, 1 + roundi(late * 2.0), lerpf(3.4, 1.6, late), ElwynnBeats.TROLLS_AT, troll_scene],
+		["ogre", ogre_data, 1 + roundi(late * 2.0), lerpf(3.0, 1.5, late), ElwynnBeats.OGRES_AT, enemy_scene],
+	]
+	# Rotate who claims the next free crowd slot. Skeletons must not starve
+	# every heavier family simply because they were checked first.
+	for i in families.size():
+		var family: Array = families[(i + _spawn_order) % families.size()]
+		if elapsed < float(family[4]):
+			continue
+		var id: String = family[0]
+		_cooldowns[id] = float(_cooldowns[id]) - delta
+		if float(_cooldowns[id]) <= 0.0:
+			_spawn_pack(player, family[1], int(family[2]), cap, family[5])
+			_cooldowns[id] = float(family[3]) / pressure
+	_spawn_order = (_spawn_order + 1) % families.size()
 
 	_cooldowns["chest"] = float(_cooldowns["chest"]) - delta
 	if float(_cooldowns["chest"]) <= 0.0:
@@ -70,39 +78,19 @@ func _tick_spawns(delta: float, player: Node2D) -> void:
 
 
 func _alive_cap() -> int:
-	if elapsed >= hogger_time:
-		return 48
-	if elapsed >= ElwynnBeats.RAMP_AT:
-		return 85
-	if elapsed >= ElwynnBeats.OGRES_AT:
-		return 70
-	if elapsed >= ElwynnBeats.GRUNTS_AT:
-		return 55
-	return 32
+	return ElwynnBeats.crowd_cap(elapsed)
 
 
-func _skeleton_interval() -> float:
-	if elapsed >= hogger_time:
-		return 1.5
-	if elapsed >= ElwynnBeats.RAMP_AT:
-		return 0.7
-	return 0.85
-
-
-func _grunt_interval() -> float:
-	if elapsed >= hogger_time:
-		return 2.8
-	if elapsed >= ElwynnBeats.RAMP_AT:
-		return 1.7
-	return 2.4
-
-
-func _ogre_interval() -> float:
-	if elapsed >= hogger_time:
-		return 3.2
-	if elapsed >= ElwynnBeats.RAMP_AT:
-		return 2.0
-	return 2.6
+func _recycle_distant_enemies(player: Node2D) -> void:
+	for node in get_tree().get_nodes_in_group("enemies"):
+		var enemy := node as Enemy
+		if enemy == null or enemy.is_in_group("boss"):
+			continue
+		if enemy.global_position.distance_squared_to(player.global_position) > 1200.0 * 1200.0:
+			# Despawning distant stragglers awards neither kills nor XP.
+			enemy.remove_from_group("enemies")
+			enemy.queue_free()
+			_alive = maxi(0, _alive - 1)
 
 
 func spawnable_catalog() -> Array[Dictionary]:
@@ -130,6 +118,10 @@ func spawn_debug(id: StringName) -> void:
 		_spawn_chest(player, 200.0)
 		return
 	var is_hogger := hogger_data != null and hogger_data.id == id
+	if is_hogger and hogger_spawned:
+		return
+	if get_tree().get_nodes_in_group("enemies").size() >= ElwynnBeats.HARD_CAP:
+		return
 	var is_troll := troll_data != null and troll_data.id == id
 	var scene := hogger_scene if is_hogger else (troll_scene if is_troll else enemy_scene)
 	var data := hogger_data if is_hogger else _data_by_id(id)
@@ -164,26 +156,31 @@ func _spawn_pack(player: Node2D, data: EnemyData, count: int, cap: int, scene: P
 	var parent := get_tree().get_first_node_in_group("entities")
 	if parent == null:
 		return
-	var alive := get_tree().get_nodes_in_group("enemies").size()
 	var base_angle := randf() * TAU
 	for i in count:
-		if alive >= cap:
+		if _alive >= mini(cap, ElwynnBeats.HARD_CAP):
 			return
 		var enemy := scene.instantiate() as Enemy
-		var angle := base_angle + randf_range(-0.22, 0.22)
+		# Alternate surrounding packs and a directional front, leaving escape
+		# routes instead of packing every batch onto one point.
+		var spread := TAU if ElwynnBeats.pressure(elapsed) <= 1.0 else 1.3
+		var angle := base_angle + (float(i) / maxf(1.0, float(count))) * spread + randf_range(-0.12, 0.12)
 		var dist := spawn_radius + randf_range(-18.0, 24.0)
 		var desired := player.global_position + Vector2.from_angle(angle) * dist
 		enemy.global_position = _snap_spawn(parent, desired)
 		parent.add_child(enemy)
 		enemy.apply_data(data)
+		enemy.max_health = roundi(float(enemy.max_health) * ElwynnBeats.health_multiplier(elapsed))
 		enemy.health = enemy.max_health
 		if not enemy.died.is_connected(_on_enemy_died):
 			enemy.died.connect(_on_enemy_died)
-		alive += 1
+		_alive += 1
 
 
 func _spawn_hogger(player: Node2D) -> void:
-	if hogger_scene == null or hogger_data == null:
+	if hogger_spawned or hogger_scene == null or hogger_data == null:
+		return
+	if get_tree().get_nodes_in_group("enemies").size() >= ElwynnBeats.HARD_CAP:
 		return
 	var parent := get_tree().get_first_node_in_group("entities")
 	if parent == null:
@@ -195,6 +192,7 @@ func _spawn_hogger(player: Node2D) -> void:
 	hogger.health = hogger.max_health
 	if not hogger.died.is_connected(_on_enemy_died):
 		hogger.died.connect(_on_enemy_died)
+	hogger_spawned = true
 	boss_spawned.emit(hogger)
 
 

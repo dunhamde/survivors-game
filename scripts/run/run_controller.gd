@@ -94,7 +94,9 @@ func _process(delta: float) -> void:
 func _update_time() -> void:
 	var minutes := int(elapsed) / 60
 	var seconds := int(elapsed) % 60
-	time_label.text = "%02d:%02d" % [minutes, seconds]
+	time_label.text = "%02d:%02d / 15:00" % [minutes, seconds]
+	if is_instance_valid(_boss) and _boss.has_method("attack_label"):
+		boss_label.text = _boss.attack_label()
 
 
 func _is_touch_ui() -> bool:
@@ -103,9 +105,9 @@ func _is_touch_ui() -> bool:
 
 func _update_hint() -> void:
 	if _is_touch_ui():
-		hint_label.text = "Touch & drag to move · Auto-attack · Survive until Hogger"
+		hint_label.text = "Touch & drag to move · Auto-attack · Hogger arrives at 14:00"
 	else:
-		hint_label.text = "WASD / Arrows to move · Auto-attack · Esc to pause · Survive until Hogger"
+		hint_label.text = "WASD / Arrows to move · Auto-attack · Esc to pause · Hogger arrives at 14:00"
 	if virtual_joystick != null and virtual_joystick.has_method("_update_visibility"):
 		virtual_joystick.call("_update_visibility")
 

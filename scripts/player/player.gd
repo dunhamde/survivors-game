@@ -156,7 +156,9 @@ func gain_xp(amount: int) -> void:
 
 
 func _xp_for_level(current_level: int) -> int:
-	return 6 + current_level * 3
+	# Horde kills accelerate late in the run; a quadratic cost keeps upgrades
+	# useful throughout fifteen minutes rather than maxing the build early.
+	return 6 + current_level * 3 + int(current_level * current_level / 3.0)
 
 
 func _apply_contact_damage() -> void:
