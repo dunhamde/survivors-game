@@ -11,7 +11,7 @@ from process_wc2_sheet import read_png, write_png
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets/sprites/enemies/hogger_sheet_raw.png"
-OUTPUT = ROOT / "assets/sprites/enemies/hogger.png"
+OUTPUT = ROOT / "assets/sprites/enemies/hogger_boss.png"
 COLS, ROWS = 5, 10
 CELL_W, CELL_H = 112, 96
 BANDS = [(0, 163), (164, 323), (324, 483), (484, 643), (644, 800),

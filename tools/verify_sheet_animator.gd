@@ -186,6 +186,12 @@ func _test_hogger() -> void:
 	var anim := SheetAnimator.from_enemy_data(data)
 	_ok(anim.uses_sheet and anim.has_attack(), "animated cleaver boss")
 	_ok(anim.sheet_cols == 5 and anim.sheet_rows == 10, "5x10 layout")
+	_ok(anim.texture.get_size() == Vector2(560, 960), "imported Hogger atlas dimensions (reject stale 48x48 texture)")
+	var scene := preload("res://scenes/enemies/hogger.tscn").instantiate()
+	_ok(scene.data == data, "standalone boss scene binds its enemy data")
+	var boss_sprite := scene.get_node("Sprite2D") as Sprite2D
+	_ok(boss_sprite.hframes == 5 and boss_sprite.vframes == 10, "scene sprite uses the atlas layout before spawning")
+	scene.free()
 	anim.set_facing_from_vector(Vector2.LEFT)
 	_ok(anim.dir_flip, "flip on -X")
 	anim.set_facing_from_vector(Vector2.RIGHT)

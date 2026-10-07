@@ -3,6 +3,9 @@
 Generated with the built-in ImageGen tool, with a transparent background.
 The original output is tracked as `assets/sprites/enemies/hogger_sheet_raw.png`.
 The reproducible, standard-library packer is `tools/process_hogger_sheet.py`.
+The packed atlas is `assets/sprites/enemies/hogger_boss.png`. This deliberately
+uses a different path from the original 48×48 `hogger.png`, so an existing
+Godot project cannot silently use that old cached texture with the new layout.
 
 ## Generation prompt
 

@@ -182,8 +182,9 @@ func _review_game() -> void:
 	# Let transient projectiles expire, then inspect ground warnings at scale.
 	for frame in 300:
 		await physics_frame
-	game.director._spawn_hogger(game.player)
+	game.director.spawn_debug(&"hogger")
 	var boss := get_nodes_in_group("boss")[0]
+	check(boss.sprite.texture.get_size() == Vector2(560, 960), "Dev-spawned Hogger must use the replacement atlas")
 	boss.set_physics_process(false)
 	boss.position = game.player.position + Vector2(90, 0)
 	boss._begin_next_attack()
