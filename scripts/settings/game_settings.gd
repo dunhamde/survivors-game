@@ -6,6 +6,7 @@ const PATH := "user://settings.cfg"
 const SECTION := "display"
 
 static var show_damage_numbers: bool = true
+static var show_fps: bool = false
 static var _loaded: bool = false
 
 
@@ -17,6 +18,7 @@ static func ensure_loaded() -> void:
 	if cfg.load(PATH) != OK:
 		return
 	show_damage_numbers = bool(cfg.get_value(SECTION, "show_damage_numbers", true))
+	show_fps = bool(cfg.get_value(SECTION, "show_fps", false))
 
 
 static func set_show_damage_numbers(value: bool) -> void:
@@ -27,8 +29,17 @@ static func set_show_damage_numbers(value: bool) -> void:
 	_save()
 
 
+static func set_show_fps(value: bool) -> void:
+	ensure_loaded()
+	if show_fps == value:
+		return
+	show_fps = value
+	_save()
+
+
 static func _save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(PATH)
 	cfg.set_value(SECTION, "show_damage_numbers", show_damage_numbers)
+	cfg.set_value(SECTION, "show_fps", show_fps)
 	cfg.save(PATH)
