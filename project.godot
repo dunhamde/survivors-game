@@ -14,7 +14,7 @@ config/name="Elwynn Survivors"
 config/description="A Warcraft-themed survivors game. Vertical slice: Paladin in Elwynn Forest."
 run/main_scene="res://scenes/elwynn_run.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
 
 [display]
 
