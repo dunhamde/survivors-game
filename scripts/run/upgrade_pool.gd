@@ -5,7 +5,6 @@ const HOLY := &"holy_strike"
 const CONS := &"consecration"
 const HAMMER := &"hammer_of_wrath"
 const SHIELD := &"avenger_shield"
-const JUDGEMENT := &"judgement"
 const LIGHTS := &"lights_hammer"
 const LIBRAM := &"libram_of_the_light"
 
@@ -18,7 +17,6 @@ const HOLY_DATA := preload("res://data/weapons/holy_strike.tres")
 const CONS_DATA := preload("res://data/weapons/consecration.tres")
 const HAMMER_DATA := preload("res://data/weapons/hammer_of_wrath.tres")
 const SHIELD_DATA := preload("res://data/weapons/avenger_shield.tres")
-const JUDGEMENT_DATA := preload("res://data/weapons/judgement.tres")
 const LIGHTS_DATA := preload("res://data/weapons/lights_hammer.tres")
 const LIBRAM_DATA := preload("res://data/weapons/libram_of_the_light.tres")
 
@@ -28,14 +26,12 @@ static func build_choices(controller: WeaponController, player: Node = null) -> 
 	_maybe_unlock(pool, controller, CONS, CONS_DATA)
 	_maybe_unlock(pool, controller, HAMMER, HAMMER_DATA)
 	_maybe_unlock(pool, controller, SHIELD, SHIELD_DATA)
-	_maybe_unlock(pool, controller, JUDGEMENT, JUDGEMENT_DATA)
 	_maybe_unlock(pool, controller, LIGHTS, LIGHTS_DATA)
 	_maybe_unlock(pool, controller, LIBRAM, LIBRAM_DATA)
 	_maybe_upgrade(pool, controller, HOLY, HOLY_DATA)
 	_maybe_upgrade(pool, controller, CONS, CONS_DATA)
 	_maybe_upgrade(pool, controller, HAMMER, HAMMER_DATA)
 	_maybe_upgrade(pool, controller, SHIELD, SHIELD_DATA)
-	_maybe_upgrade(pool, controller, JUDGEMENT, JUDGEMENT_DATA)
 	_maybe_upgrade(pool, controller, LIGHTS, LIGHTS_DATA)
 	_maybe_upgrade(pool, controller, LIBRAM, LIBRAM_DATA)
 	_maybe_seals(pool, player)
@@ -58,7 +54,6 @@ static func apply(choice: Dictionary, player: Node, controller: WeaponController
 		"unlock_consecration": CONS_DATA,
 		"unlock_hammer_of_wrath": HAMMER_DATA,
 		"unlock_avenger_shield": SHIELD_DATA,
-		"unlock_judgement": JUDGEMENT_DATA,
 		"unlock_lights_hammer": LIGHTS_DATA,
 		"unlock_libram_of_the_light": LIBRAM_DATA,
 	}
@@ -70,7 +65,6 @@ static func apply(choice: Dictionary, player: Node, controller: WeaponController
 		"upgrade_consecration": CONS,
 		"upgrade_hammer_of_wrath": HAMMER,
 		"upgrade_avenger_shield": SHIELD,
-		"upgrade_judgement": JUDGEMENT,
 		"upgrade_lights_hammer": LIGHTS,
 		"upgrade_libram_of_the_light": LIBRAM,
 	}

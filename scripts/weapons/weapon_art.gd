@@ -28,8 +28,6 @@ static func texture(kind: StringName) -> Texture2D:
 			img = _radiance()
 		&"libram":
 			img = _libram()
-		&"judgement":
-			img = _spear()
 		&"ring":
 			img = _ring()
 		_:
@@ -199,26 +197,6 @@ static func _libram() -> Image:
 		"           G          ",
 	], {"K": Color("303746"), "B": Color("415a88"), "G": Color("9b722f"),
 		"Y": Color("e5bd60"), "W": Color("fff7da"), "P": Color("e2d7b6"), "I": Color("b8a783")})
-
-
-static func _spear() -> Image:
-	# A luminous gold lance with a broad ivory point and winged guard.
-	var img := Image.create(32, 14, false, Image.FORMAT_RGBA8)
-	img.fill(Color.TRANSPARENT)
-	img.fill_rect(Rect2i(1, 5, 21, 4), Color("936733"))
-	img.fill_rect(Rect2i(2, 6, 20, 2), Color("f5d574"))
-	img.fill_rect(Rect2i(4, 6, 18, 1), Color("fff7d4"))
-	for x in range(18, 31):
-		var half := maxi(0, int((31 - x) * 0.38))
-		img.fill_rect(Rect2i(x, 6 - half, 1, half * 2 + 2), Color("ddaa48"))
-		if half > 0:
-			img.fill_rect(Rect2i(x, 7 - half, 1, half * 2), Color("fff6cf"))
-	img.fill_rect(Rect2i(18, 1, 2, 12), Color("9a753b"))
-	img.fill_rect(Rect2i(18, 2, 1, 10), Color("ffe295"))
-	for i in 4:
-		img.fill_rect(Rect2i(14 + i, 1 + i, 2, 2), Color("e8c56e"))
-		img.fill_rect(Rect2i(14 + i, 11 - i, 2, 2), Color("b89144"))
-	return img
 
 
 static func _ground_hammer() -> Image:

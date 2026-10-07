@@ -40,7 +40,7 @@ func frames(count: int) -> void:
 
 
 func _run() -> void:
-	check(Catalog.discover().size() == 7, "Weapon Lab must contain seven remaining spells")
+	check(Catalog.discover().size() == 6, "Weapon Lab must contain six remaining spells")
 	var host := Node2D.new()
 	host.position = Vector2(80, 60)
 	root.add_child(host)
@@ -76,22 +76,6 @@ func _run() -> void:
 	host = Node2D.new()
 	root.add_child(host)
 	var target := Probe.new()
-	target.position = Vector2(45, 0)
-	host.add_child(target)
-	var bolt = load("res://scenes/weapons/judgement_bolt.tscn").instantiate()
-	bolt.damage = 14
-	host.add_child(bolt)
-	await frames(15)
-	check(target.hits == [14], "Judgement pierce must hit each body once despite its contact flash")
-	await frames(50)
-	check(not is_instance_valid(bolt), "Judgement lifetime")
-	for child in host.get_children():
-		check(not child is SpellRadiance, "Projectile trails and contact sparks must drain after expiry")
-	host.free()
-
-	host = Node2D.new()
-	root.add_child(host)
-	target = Probe.new()
 	host.add_child(target)
 	var orb = load("res://scenes/weapons/libram_orb.tscn").instantiate()
 	orb.damage = 10
@@ -123,7 +107,7 @@ func _capture_lab() -> void:
 	demo.loop_toggle.set_pressed_no_signal(false)
 	demo.layout_option.select(0)
 	demo._loading = false
-	for id in ["judgement", "lights_hammer", "libram_of_the_light"]:
+	for id in ["lights_hammer", "libram_of_the_light"]:
 		for i in demo.catalog.size():
 			if demo.catalog[i].id == StringName(id):
 				demo.weapon_option.select(i)

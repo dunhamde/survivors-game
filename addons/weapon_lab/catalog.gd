@@ -29,9 +29,6 @@ static func components(data: WeaponData) -> Array[Dictionary]:
 		"libram_of_the_light":
 			parts.append(_generated("Orbiting libram", "libram"))
 			parts.append(_generated("Holy radiance", "radiance"))
-		"judgement":
-			parts.append(_generated("Judgement projectile", "judgement"))
-			parts.append(_generated("Holy radiance", "radiance"))
 		"hammer_of_wrath":
 			parts.append(_generated("Hammer of Wrath", "wrath_hammer"))
 			parts.append(_generated("Divine electricity", "wrath_hammer_glow"))
