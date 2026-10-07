@@ -14,6 +14,13 @@ func _ready() -> void:
 	collision_mask = 2
 	rotation = direction.angle()
 	body_entered.connect(_on_body_entered)
+	z_index = 6
+	var glow := Sprite2D.new()
+	glow.texture = WeaponArt.texture(&"radiance")
+	glow.scale = Vector2(0.85, 0.4)
+	glow.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	add_child(glow)
+	SpellRadiance.trail(self)
 	var sprite := Sprite2D.new()
 	sprite.texture = WeaponArt.texture(&"judgement")
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -35,6 +42,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if _hit.has(body) or not Hittable.is_target(body):
 		return
 	_hit[body] = true
+	SpellRadiance.impact(get_parent(), global_position)
 	if source != null:
 		source.deal_to(body, damage)
 	else:

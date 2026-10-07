@@ -7,7 +7,7 @@
 script = ExtResource("1")
 id = &"lights_hammer"
 display_name = "Light's Hammer"
-description = "Drops a pulsing hammer on a nearby pack."
+description = "Holy lightning plants a hammer in a pulsing circle of light."
 scene = ExtResource("2")
 max_level = 5
 upgrade_hint = "+Damage, +Area, extra hammers"

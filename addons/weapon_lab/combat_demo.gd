@@ -241,7 +241,7 @@ func restart() -> void:
 
 func _spawn_targets(family: String, radius: float) -> void:
 	var count: int = [1, 5, 9][layout_option.selected]
-	var radial := family in ["consecration", "divine_storm", "libram_of_the_light"]
+	var radial := family in ["consecration", "libram_of_the_light"]
 	for i in count:
 		var dummy := Actor.new()
 		dummy.is_dummy = true

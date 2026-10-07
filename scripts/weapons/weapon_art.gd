@@ -22,6 +22,10 @@ static func texture(kind: StringName) -> Texture2D:
 			img = _shield()
 		&"shield_glow":
 			img = _shield_glow()
+		&"ground_hammer":
+			img = _ground_hammer()
+		&"radiance":
+			img = _radiance()
 		&"libram":
 			img = _libram()
 		&"judgement":
@@ -171,44 +175,95 @@ static func _shield_glow() -> Image:
 
 
 static func _libram() -> Image:
-	var img := Image.create(12, 14, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	var cover := Color("3a4a8c")
-	var page := Color("f4ecd0")
-	var gold := Color("e0c050")
-	for y in range(1, 13):
-		for x in range(1, 11):
-			img.set_pixel(x, y, cover)
-	for y in range(2, 12):
-		for x in range(3, 10):
-			img.set_pixel(x, y, page)
-	for y in range(3, 11):
-		img.set_pixel(2, y, gold)
-	img.set_pixel(6, 6, gold)
-	img.set_pixel(6, 7, gold)
-	img.set_pixel(5, 7, gold)
-	img.set_pixel(7, 7, gold)
-	return img
+	# Open illuminated scripture, blue leather, gold clasps and ivory pages.
+	return _pixels([
+		"                      ",
+		"  KKKKKKK    KKKKKKK  ",
+		" KBBBBBBKKKKKKBBBBBBK ",
+		"KBGYYYYYYKIIKYYYYYYGBK",
+		"KBYWWWWWWKIIKWWWWWWYBK",
+		"KBYWPPPPWKIIKWPPPPWYBK",
+		"KBYWGGGPWKIIKWPGGGWYBK",
+		"KBYWPPPPWKIIKWPPPPWYBK",
+		"KBYWGGGPWKIIKWPGGGWYBK",
+		"KBYWPPPPWKIIKWPPPPWYBK",
+		"KBYWPGPPWKIIKWPPGPWYBK",
+		"KBYWGGGPWKIIKWPGGGWYBK",
+		"KBYWPGPPWKIIKWPPGPWYBK",
+		"KBYWPPPPWKIIKWPPPPWYBK",
+		"KBGYYYYYYKIIKYYYYYYGBK",
+		" KBBBBBBBKIIKBBBBBBBK ",
+		"  KKKKKKKKYYKKKKKKKK  ",
+		"          YY          ",
+		"          YG          ",
+		"           G          ",
+	], {"K": Color("303746"), "B": Color("415a88"), "G": Color("9b722f"),
+		"Y": Color("e5bd60"), "W": Color("fff7da"), "P": Color("e2d7b6"), "I": Color("b8a783")})
 
 
 static func _spear() -> Image:
-	var img := Image.create(18, 8, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	var gold := Color("e8d060")
-	var gold_l := Color("fff4b0")
-	var steel := Color("d8e0ec")
-	for x in range(2, 14):
-		img.set_pixel(x, 3, gold)
-		img.set_pixel(x, 4, gold_l)
-	for y in range(1, 7):
-		img.set_pixel(14, y, steel)
-	img.set_pixel(15, 2, steel)
-	img.set_pixel(15, 3, gold_l)
-	img.set_pixel(15, 4, gold_l)
-	img.set_pixel(15, 5, steel)
-	img.set_pixel(16, 3, gold_l)
-	img.set_pixel(16, 4, gold_l)
-	img.set_pixel(17, 3, steel)
+	# A luminous gold lance with a broad ivory point and winged guard.
+	var img := Image.create(32, 14, false, Image.FORMAT_RGBA8)
+	img.fill(Color.TRANSPARENT)
+	img.fill_rect(Rect2i(1, 5, 21, 4), Color("936733"))
+	img.fill_rect(Rect2i(2, 6, 20, 2), Color("f5d574"))
+	img.fill_rect(Rect2i(4, 6, 18, 1), Color("fff7d4"))
+	for x in range(18, 31):
+		var half := maxi(0, int((31 - x) * 0.38))
+		img.fill_rect(Rect2i(x, 6 - half, 1, half * 2 + 2), Color("ddaa48"))
+		if half > 0:
+			img.fill_rect(Rect2i(x, 7 - half, 1, half * 2), Color("fff6cf"))
+	img.fill_rect(Rect2i(18, 1, 2, 12), Color("9a753b"))
+	img.fill_rect(Rect2i(18, 2, 1, 10), Color("ffe295"))
+	for i in 4:
+		img.fill_rect(Rect2i(14 + i, 1 + i, 2, 2), Color("e8c56e"))
+		img.fill_rect(Rect2i(14 + i, 11 - i, 2, 2), Color("b89144"))
+	return img
+
+
+static func _ground_hammer() -> Image:
+	# Upright planted warhammer, distinct from the flying Hammer of Wrath.
+	var img := Image.create(28, 36, false, Image.FORMAT_RGBA8)
+	img.fill(Color.TRANSPARENT)
+	img.fill_rect(Rect2i(11, 13, 6, 21), Color("303746"))
+	img.fill_rect(Rect2i(12, 14, 4, 18), Color("705039"))
+	for y in [17, 21, 25, 29]:
+		img.fill_rect(Rect2i(12, y, 4, 2), Color("b99247"))
+	img.fill_rect(Rect2i(10, 31, 8, 4), Color("805c30"))
+	img.fill_rect(Rect2i(11, 31, 6, 2), Color("edc86c"))
+	img.fill_rect(Rect2i(2, 3, 24, 13), Color("303746"))
+	img.fill_rect(Rect2i(1, 5, 26, 9), Color("303746"))
+	img.fill_rect(Rect2i(3, 4, 22, 11), Color("926d35"))
+	img.fill_rect(Rect2i(5, 5, 18, 9), Color("7692ae"))
+	img.fill_rect(Rect2i(5, 5, 18, 2), Color("d5e4e9"))
+	img.fill_rect(Rect2i(5, 12, 18, 2), Color("435779"))
+	img.fill_rect(Rect2i(3, 5, 2, 9), Color("edc86c"))
+	img.fill_rect(Rect2i(23, 5, 2, 9), Color("c19846"))
+	img.fill_rect(Rect2i(12, 5, 4, 9), Color("e6bd5b"))
+	img.fill_rect(Rect2i(9, 8, 10, 3), Color("e6bd5b"))
+	img.fill_rect(Rect2i(13, 6, 2, 7), Color("fff7d4"))
+	img.fill_rect(Rect2i(10, 9, 8, 1), Color("fff7d4"))
+	return img
+
+
+static func _pixels(rows: Array, palette: Dictionary) -> Image:
+	var img := Image.create(rows[0].length(), rows.size(), false, Image.FORMAT_RGBA8)
+	img.fill(Color.TRANSPARENT)
+	for y in rows.size():
+		for x in mini(rows[y].length(), img.get_width()):
+			var key: String = rows[y].substr(x, 1)
+			if palette.has(key):
+				img.set_pixel(x, y, palette[key])
+	return img
+
+
+static func _radiance() -> Image:
+	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	for y in 64:
+		for x in 64:
+			var d := Vector2(x - 31.5, y - 31.5) / 31.5
+			var alpha := exp(-d.length_squared() * 6.5) * 0.42
+			img.set_pixel(x, y, Color(1.0, 0.82, 0.4, alpha))
 	return img
 
 

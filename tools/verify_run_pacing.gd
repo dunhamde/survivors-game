@@ -145,7 +145,7 @@ func _run() -> void:
 
 
 func _review_game() -> void:
-	# Exercise the real terrain, crowd collisions, all eight weapon effects,
+	# Exercise the real terrain, crowd collisions, all seven weapon effects,
 	# and boss warnings together, not only the isolated fixtures above.
 	var game := preload("res://scenes/elwynn_run.tscn").instantiate()
 	root.add_child(game)
@@ -156,7 +156,7 @@ func _review_game() -> void:
 	game.player.health = game.player.max_health
 	game.elapsed = 765.0
 	game.director.elapsed = 765.0
-	for id in ["holy_strike", "consecration", "hammer_of_wrath", "avenger_shield", "divine_storm", "judgement", "lights_hammer", "libram_of_the_light"]:
+	for id in ["holy_strike", "consecration", "hammer_of_wrath", "avenger_shield", "judgement", "lights_hammer", "libram_of_the_light"]:
 		var data := load("res://data/weapons/%s.tres" % id) as WeaponData
 		game.player.weapons.add_weapon(data)
 		game.player.weapons.get_weapon(data.id).level = data.max_level

@@ -28,16 +28,17 @@ static func components(data: WeaponData) -> Array[Dictionary]:
 			parts.append(_generated("Shield", "shield"))
 		"libram_of_the_light":
 			parts.append(_generated("Orbiting libram", "libram"))
+			parts.append(_generated("Holy radiance", "radiance"))
 		"judgement":
 			parts.append(_generated("Judgement projectile", "judgement"))
+			parts.append(_generated("Holy radiance", "radiance"))
 		"hammer_of_wrath":
 			parts.append(_generated("Hammer of Wrath", "wrath_hammer"))
 			parts.append(_generated("Divine electricity", "wrath_hammer_glow"))
-		"divine_storm":
-			parts.append(_image("Slash", "holy_slash"))
 		"lights_hammer":
-			parts.append(_image("Hammer", "hammer"))
+			parts.append(_generated("Planted hammer", "ground_hammer"))
 			parts.append(_generated("Ground ring", "ring"))
+			parts.append({"name": "Lightning impact", "kind": "burst", "source": "res://scripts/weapons/holy_shock_bolt.gd"})
 		"consecration":
 			parts.append({"name": "Scorched ground (shader snapshot)", "kind": "ground",
 				"source": "res://shaders/consecration_ground.gdshader"})
@@ -85,7 +86,7 @@ static func apply_part(sprite: Sprite2D, part: Dictionary, data: WeaponData, lev
 		"ring":
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 			sprite.scale = Vector2.ONE * radius / 28.0
-		"wrath_hammer_glow":
+		"wrath_hammer_glow", "radiance":
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		"ground", "wave":
 			var mat := ShaderMaterial.new()
